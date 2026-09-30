@@ -1,6 +1,6 @@
-# LLM assistant instructions
+# CLAUDE.md
 
-Instructions for the LLM coding assistant working on this repository. We use Claude (Claude Code, by Anthropic): `.claude/CLAUDE.md` imports this file, so Claude Code loads it automatically at the start of every session. Other assistants can read it as it is.
+Instructions for the LLM coding assistant working on this repository. We use Claude (Claude Code, by Anthropic), which loads this file automatically at the start of every session.
 
 ## Project
 
