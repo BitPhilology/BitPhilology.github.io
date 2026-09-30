@@ -20,6 +20,7 @@ The Bit Philology website: a static site built with SvelteKit and deployed to Gi
 | `npm run build` | Builds the static site into `build/` |
 | `npm run preview` | Serves the build locally |
 | `npm run check` | Runs `svelte-kit sync` and `svelte-check` (types and Svelte diagnostics) |
+| `npm run syncFromHedgeDoc` | Imports the missing pages from HedgeDoc (see [Content](#content)) |
 
 ## General rules
 
@@ -73,8 +74,59 @@ Never load fonts from Google Fonts or any other external service.
 
 ## Content
 
-- Each page is a Markdown file, `src/content/<slug>/index.md`, with its images in `src/content/<slug>/assets/`.
-- The pages come from HedgeDoc through a `syncFromHedgeDoc` script (not written yet). It only adds the pages that are missing; it never overwrites existing ones.
+### Structure
+
+The pages are Markdown files grouped by section, so that the folder tree mirrors the URLs:
+
+```
+src/content/
+  hedgedoc-urls.txt           the HedgeDoc notes to import, one URL per line
+  <section>/<slug>/index.md   a page
+  <section>/<slug>/assets/    its images, linked as ./assets/<file>
+```
+
+- Sections: `events`, `publications`, `artifacts`, `about`, and `about/team` for the team cards.
+- The files in `src/content` are data: the import script never touches `src/routes` or any other code.
+- A page with `source:` in its front matter was imported from HedgeDoc. To change it, edit the note on HedgeDoc and re-import it with `--force`: local edits to an imported page are lost on re-import.
+- A `.md` file without `source:` is hand-written. Never touch it, and neither does the script.
+- Imported pages keep the note as it is, YAML comments included, even when they are not in English.
+
+### Notes on HedgeDoc
+
+The notes live on a HedgeDoc 1.x server, https://pad.dsl.unibe.ch, which may only be reachable from the University of Bern network. Every note has two URL forms:
+
+- edit: `https://pad.dsl.unibe.ch/<id>` (raw Markdown on `/<id>/download`). `https://pad.dsl.unibe.ch/<id>` is the canonical source of a page.
+- published: `https://pad.dsl.unibe.ch/s/<shortid>` (raw Markdown on `/s/<shortid>/download`); `/s/<shortid>/edit` redirects to `/<id>`.
+
+Each note has a YAML front matter with `type`, `title`, `date` (`YYYY-MM-DD`), `venue`, `keywords`, `pinned`, `tags`, and optionally `subtitle`, `publication-type` and `slug`. The page title is the `title` field, not a `#` heading in the body.
+
+**To choose the URL of a page, add `slug:` to the note's metadata on HedgeDoc.** Otherwise the slug comes from the title.
+
+### Importing: `scripts/syncFromHedgeDoc.js`
+
+Run it by hand; there is no GitHub Action. Pass options after `--`:
+
+```sh
+npm run syncFromHedgeDoc                                 # import the notes that are missing
+npm run syncFromHedgeDoc -- --dry-run                    # show what would happen, write nothing
+npm run syncFromHedgeDoc -- --force events/<slug>        # re-import one page (path relative to src/content)
+```
+
+For each URL in `src/content/hedgedoc-urls.txt` (empty lines and lines starting with `#` are ignored; both URL forms work, with or without `?edit`, `?view`, `?both` or `#fragment`), the script:
+
+1. Finds the canonical note id; a published URL is followed through `/s/<shortid>/edit`.
+2. Skips the note, without touching anything, if any `index.md` already has that `source:`.
+3. Downloads the Markdown from `/<id>/download`.
+4. Picks the section from `type` (lowercase, no spaces): `event` → `events`, `publication` → `publications`, `artifact` → `artifacts`, `about` → `about`, `team` → `about/team`. A missing or unknown type falls back to `about`, with a warning.
+5. Computes the slug from `slug:` or else from the title: Markdown and accents removed, lowercase, only `a-z`, `0-9` and hyphens, cut at a hyphen around 60 characters. Without a title, it uses the note id.
+6. Never overwrites: if `<section>/<slug>/index.md` exists with another source or without `source:`, it reports a conflict and moves on. A folder without `index.md` (such as `about/team`) is not a conflict.
+7. Downloads every linked image, from HedgeDoc or elsewhere, into `assets/` and rewrites the links as `./assets/<file>`, keeping alt text and title. It handles `![alt](url "title")`, the HedgeDoc size syntax `url =WxH`, reference definitions `[id]: url` and `<img src="…">`, and ignores code. If an image fails, the original link stays and it is reported.
+8. Adds `source:` (canonical URL) and `importedAt:` (ISO timestamp) to the front matter, keeping every other field, the comments and the formatting (it uses the `yaml` library, never regular expressions, for the front matter).
+9. Writes `index.md`. The body stays identical apart from the image links (and a final newline).
+
+`--force <path>` re-imports that page and replaces its `index.md` and `assets/`. If the note's type or slug changed, the page moves to the new place: the old `index.md` and `assets/` are deleted, and the old folder too if nothing else is left in it.
+
+Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the images downloaded or failed, and the links to other HedgeDoc notes found in the text (not rewritten yet). The exit code is 1 if there were errors, conflicts or failed images.
 
 ## Svelte
 
