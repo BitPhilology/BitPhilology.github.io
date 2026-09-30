@@ -1,5 +1,7 @@
 // Imports the HedgeDoc notes listed in src/content/hedgedoc-urls.txt into
 // src/content/<section>/<slug>/index.md, with their images in assets/.
+// Notes with `type: home-image-filler` are Home image fillers: they are validated and written
+// to src/content/home-image-fillers/<note id>/index.md.
 // The rules are documented in CLAUDE.md, under "Content".
 //
 //   npm run syncFromHedgeDoc                        import the notes that are missing
@@ -22,9 +24,11 @@ const SECTIONS = {
 	artifact: 'artifacts',
 	about: 'about',
 	team: 'about/team',
-	"home-filler": 'home-filler'
+	'home-image-filler': 'home-image-fillers'
 };
 const FALLBACK_TYPE = 'about';
+const FILLER_SECTION = SECTIONS['home-image-filler'];
+const FILLER_ACCENTS = ['about', 'event', 'publication', 'artifact'];
 const SLUG_MAX_LENGTH = 60;
 const NOTE_TIMEOUT_MS = 15_000;
 const IMAGE_TIMEOUT_MS = 60_000;
@@ -73,7 +77,8 @@ const report = {
 	warnings: [],
 	images: [],
 	failedImages: [],
-	noteLinks: []
+	noteLinks: [],
+	unlisted: []
 };
 
 process.exitCode = await main();
@@ -111,6 +116,7 @@ async function main() {
 			console.log(`      error: ${error.message}`);
 		}
 	}
+	if (!options.force.length) findUnlistedPages(pages, jobs);
 
 	printSummary(options.dryRun);
 	return report.errors.length || report.conflicts.length || report.failedImages.length ? 1 : 0;
@@ -174,6 +180,20 @@ function forceJobs(paths, pages) {
 	return jobs;
 }
 
+/** Reports imported pages whose link is no longer in the list. They are kept, never deleted. */
+function findUnlistedPages(pages, jobs) {
+	const imported = [...pages.byDir].filter(([, page]) => page.source);
+	if (!imported.length) return;
+	if (jobs.some((job) => !job.source)) {
+		report.warnings.push('Could not check for pages removed from the list: some links were not resolved.');
+		return;
+	}
+	const listed = new Set(jobs.map((job) => job.source));
+	for (const [dir, page] of imported) {
+		if (!listed.has(page.source)) report.unlisted.push({ dir, source: page.source });
+	}
+}
+
 /** Normalizes a --force argument to a page folder relative to src/content, e.g. "events/<slug>". */
 function pageDir(given) {
 	let dir = path.posix.normalize(given.replaceAll('\\', '/'));
@@ -185,6 +205,7 @@ function pageDir(given) {
 async function processJob(job, pages, { dryRun, importedAt }) {
 	const id = job.ref.id ?? (await resolveShortId(job.ref.shortid));
 	const source = canonicalSource(id);
+	job.source = source;
 
 	const present = pages.bySource.get(source);
 	if (present && !job.force) {
@@ -196,7 +217,10 @@ async function processJob(job, pages, { dryRun, importedAt }) {
 	const note = parseNote(await fetchNote(id));
 	const { section, warning } = sectionFor(note.doc.get('type'));
 	if (warning) report.warnings.push(`${source}: ${warning}`);
-	const dir = `${section}/${slugFor(note.doc, id)}`;
+	// Fillers have no title: their folder is named after the note id, which never changes.
+	const filler = section === FILLER_SECTION;
+	const dir = `${section}/${filler ? slugify(id) : slugFor(note.doc, id)}`;
+	if (filler) validateFiller(note, dir, pages);
 
 	const occupant = pages.byDir.get(dir);
 	if (occupant && occupant.source !== source) {
@@ -229,16 +253,17 @@ async function processJob(job, pages, { dryRun, importedAt }) {
 	}
 
 	if (moved) pages.byDir.delete(moved);
-	pages.byDir.set(dir, { source });
+	pages.byDir.set(dir, { source, position: note.doc.get('position') });
 	pages.bySource.set(source, dir);
 
 	const verb = dryRun ? 'would ' : '';
+	const details = filler ? ` (accent ${note.doc.get('accent')}, position ${note.doc.get('position')})` : '';
 	if (job.force) {
 		report.reimported.push({ dir, source, movedFrom: moved });
-		console.log(`      ${verb}re-import ${pagePath(dir)}${moved ? `, moved from ${pagePath(moved)}` : ''}`);
+		console.log(`      ${verb}re-import ${pagePath(dir)}${details}${moved ? `, moved from ${pagePath(moved)}` : ''}`);
 	} else {
 		report.added.push({ dir, source });
-		console.log(`      ${verb}add ${pagePath(dir)}`);
+		console.log(`      ${verb}add ${pagePath(dir)}${details}`);
 	}
 }
 
@@ -363,6 +388,57 @@ function stripMarkdown(text) {
 }
 
 // ---------------------------------------------------------------------------
+// Home image fillers
+
+/**
+ * Checks a Home image filler that would be written to `dir`, and throws an error that says
+ * what to fix in the note. Its position must not be taken by another filler.
+ */
+function validateFiller(note, dir, pages) {
+	const problems = [];
+	const accent = note.doc.get('accent');
+	if (!FILLER_ACCENTS.includes(accent)) {
+		problems.push(`accent must be one of ${FILLER_ACCENTS.join(', ')} (found ${describe(accent)})`);
+	}
+	const position = note.doc.get('position');
+	if (!Number.isInteger(position) || position < 1) {
+		problems.push(`position must be a whole number from 1 up (found ${describe(position)})`);
+	} else {
+		for (const [other, page] of pages.byDir) {
+			if (other !== dir && other.startsWith(`${FILLER_SECTION}/`) && page.position === position) {
+				const owner = page.source ? ` (${page.source})` : '';
+				problems.push(`position ${position} is already taken by ${pagePath(other)}${owner}; pick a free position`);
+			}
+		}
+	}
+
+	const images = findImageUrls(note.body);
+	if (images.length !== 1) {
+		problems.push(`the body must hold exactly one image, but it has ${images.length || 'none'}`);
+	} else if (images[0].kind !== 'inline') {
+		problems.push('the image must be written as ![alt text](url "caption")');
+	} else {
+		const [image] = images;
+		if (!image.alt.trim()) problems.push('the image has no alt text');
+		const rest = (note.body.slice(0, image.image.start) + note.body.slice(image.image.end)).trim();
+		if (rest) problems.push(`the body must hold only the image, but it also has "${excerpt(rest)}"`);
+	}
+
+	if (problems.length) {
+		throw new Error(`invalid home image filler: ${problems.join('; ')}. Fix the note on HedgeDoc and run the script again.`);
+	}
+}
+
+function describe(value) {
+	return value === undefined ? 'nothing' : JSON.stringify(value);
+}
+
+function excerpt(text) {
+	const flat = text.replace(/\s+/g, ' ');
+	return flat.length > 60 ? `${flat.slice(0, 60)}…` : flat;
+}
+
+// ---------------------------------------------------------------------------
 // Images
 
 /**
@@ -459,7 +535,8 @@ function fileNameFor(url, type, usedNames) {
  * Finds the image URLs in a Markdown body: inline images ![alt](url "title"), also with the
  * HedgeDoc size syntax (url =WxH), reference definitions [id]: url used by images, and
  * <img src="…">. Code blocks, code spans and HTML comments are ignored.
- * Returns [{ start, end, raw }], where start and end delimit the URL in the body.
+ * Returns [{ kind, start, end, raw }], where kind is inline, reference or tag and start and end
+ * delimit the URL in the body. Inline images also have `alt` and `image`, the offsets of the whole image.
  */
 function findImageUrls(body) {
 	const text = maskCode(body);
@@ -475,7 +552,10 @@ function findImageUrls(body) {
 		if (text[altEnd + 1] === '(') {
 			const inline = parseInlineDestination(text, altEnd + 2);
 			if (inline) {
-				if (inline.end > inline.start) spans.push({ start: inline.start, end: inline.end });
+				if (inline.end > inline.start) {
+					const image = { start: i, end: inline.close };
+					spans.push({ kind: 'inline', start: inline.start, end: inline.end, image, alt: body.slice(i + 2, altEnd) });
+				}
 				i = inline.close;
 				continue;
 			}
@@ -494,13 +574,14 @@ function findImageUrls(body) {
 	for (const match of text.matchAll(definition)) {
 		if (!imageLabels.has(normalizeLabel(match[1]))) continue;
 		const [start, end] = match.indices[2];
-		spans.push(match[2].startsWith('<') ? { start: start + 1, end: end - 1 } : { start, end });
+		const url = match[2].startsWith('<') ? { start: start + 1, end: end - 1 } : { start, end };
+		spans.push({ kind: 'reference', ...url });
 	}
 
 	const imgTag = /<img\b[^>]*?\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/dgi;
 	for (const match of text.matchAll(imgTag)) {
 		const [start, end] = match.indices[1] ?? match.indices[2] ?? match.indices[3];
-		spans.push({ start, end });
+		spans.push({ kind: 'tag', start, end });
 	}
 
 	return spans.map((span) => ({ ...span, raw: body.slice(span.start, span.end) }));
@@ -644,7 +725,10 @@ function findNoteLinks(body) {
 // ---------------------------------------------------------------------------
 // Files
 
-/** Maps every page folder (relative to src/content) to its source:, or null for hand-written pages. */
+/**
+ * Maps every page folder (relative to src/content) to its source: (null for hand-written pages)
+ * and its position: (used by Home image fillers).
+ */
 async function indexPages() {
 	const byDir = new Map();
 	const bySource = new Map();
@@ -655,22 +739,25 @@ async function indexPages() {
 	for (const file of files) {
 		if (path.basename(file) !== 'index.md' || path.dirname(file) === '.') continue;
 		const dir = path.dirname(file).split(path.sep).join('/');
-		const source = await readSource(path.join(CONTENT_DIR, file));
-		byDir.set(dir, { source });
-		if (source) bySource.set(source, dir);
+		const page = await readPage(path.join(CONTENT_DIR, file));
+		byDir.set(dir, page);
+		if (page.source) bySource.set(page.source, dir);
 	}
 	return { byDir, bySource };
 }
 
-async function readSource(file) {
+async function readPage(file) {
 	try {
 		const match = (await readFile(file, 'utf8')).match(FRONT_MATTER);
-		const source = match && parseDocument(match[1] ?? '').get('source');
-		if (typeof source !== 'string' || !source.trim()) return null;
+		if (!match) return { source: null };
+		const doc = parseDocument(match[1] ?? '');
+		const position = doc.get('position');
+		const source = doc.get('source');
+		if (typeof source !== 'string' || !source.trim()) return { source: null, position };
 		const ref = parseNoteUrl(source.trim());
-		return ref?.id ? canonicalSource(ref.id) : source.trim();
+		return { source: ref?.id ? canonicalSource(ref.id) : source.trim(), position };
 	} catch {
-		return null;
+		return { source: null };
 	}
 }
 
@@ -741,4 +828,9 @@ function printSummary(dryRun) {
 		`${pagePath(image.dir)}: ${image.url} (${image.reason})`
 	);
 	section('Links to other HedgeDoc notes, not rewritten', report.noteLinks, (link) => `${pagePath(link.dir)}: ${link.url}`);
+	if (report.unlisted.length) {
+		section(`Pages no longer in ${relative(URL_LIST)}, kept`, report.unlisted, (p) =>
+			`${pagePath(p.dir)}  ← ${p.source}`
+		);
+	}
 }

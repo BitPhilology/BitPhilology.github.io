@@ -116,9 +116,10 @@ src/content/
   hedgedoc-urls.txt           the HedgeDoc notes to import, one URL per line
   <section>/<slug>/index.md   a page
   <section>/<slug>/assets/    its images, linked as ./assets/<file>
+  home-image-fillers/<note id>/index.md   a Home image filler (see below)
 ```
 
-- Sections: `events`, `publications`, `artifacts`, `about`, and `about/team` for the team cards.
+- Sections: `events`, `publications`, `artifacts`, `about`, `about/team` for the team cards, and `home-image-fillers` for the image tiles of the Home grid.
 - The files in `src/content` are data: the import script never touches `src/routes` or any other code.
 - A page with `source:` in its front matter was imported from HedgeDoc. To change it, edit the note on HedgeDoc and re-import it with `--force`: local edits to an imported page are lost on re-import.
 - A `.md` file without `source:` is hand-written. Never touch it, and neither does the script.
@@ -150,8 +151,8 @@ For each URL in `src/content/hedgedoc-urls.txt` (empty lines and lines starting 
 1. Finds the canonical note id; a published URL is followed through `/s/<shortid>/edit`.
 2. Skips the note, without touching anything, if any `index.md` already has that `source:`.
 3. Downloads the Markdown from `/<id>/download`.
-4. Picks the section from `type` (lowercase, no spaces): `event` → `events`, `publication` → `publications`, `artifact` → `artifacts`, `about` → `about`, `team` → `about/team`. A missing or unknown type falls back to `about`, with a warning.
-5. Computes the slug from `slug:` or else from the title: Markdown and accents removed, lowercase, only `a-z`, `0-9` and hyphens, cut at a hyphen around 60 characters. Without a title, it uses the note id.
+4. Picks the section from `type` (lowercase, no spaces): `event` → `events`, `publication` → `publications`, `artifact` → `artifacts`, `about` → `about`, `team` → `about/team`, `home-image-filler` → `home-image-fillers`. A missing or unknown type falls back to `about`, with a warning.
+5. Computes the slug from `slug:` or else from the title: Markdown and accents removed, lowercase, only `a-z`, `0-9` and hyphens, cut at a hyphen around 60 characters. Without a title, it uses the note id. Home image fillers always use the note id, and are validated first (see below).
 6. Never overwrites: if `<section>/<slug>/index.md` exists with another source or without `source:`, it reports a conflict and moves on. A folder without `index.md` (such as `about/team`) is not a conflict.
 7. Downloads every linked image, from HedgeDoc or elsewhere, into `assets/` and rewrites the links as `./assets/<file>`, keeping alt text and title. It handles `![alt](url "title")`, the HedgeDoc size syntax `url =WxH`, reference definitions `[id]: url` and `<img src="…">`, and ignores code. If an image fails, the original link stays and it is reported.
 8. Adds `source:` (canonical URL) and `importedAt:` (ISO timestamp) to the front matter, keeping every other field, the comments and the formatting (it uses the `yaml` library, never regular expressions, for the front matter).
@@ -159,7 +160,34 @@ For each URL in `src/content/hedgedoc-urls.txt` (empty lines and lines starting 
 
 `--force <path>` re-imports that page and replaces its `index.md` and `assets/`. If the note's type or slug changed, the page moves to the new place: the old `index.md` and `assets/` are deleted, and the old folder too if nothing else is left in it.
 
-Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the images downloaded or failed, and the links to other HedgeDoc notes found in the text (not rewritten yet). The exit code is 1 if there were errors, conflicts or failed images.
+Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the images downloaded or failed, the links to other HedgeDoc notes found in the text (not rewritten yet) and the imported pages whose link is no longer in the list. The exit code is 1 if there were errors, conflicts or failed images.
+
+The script never deletes a page because its link left the list: it lists it under "Pages no longer in src/content/hedgedoc-urls.txt, kept" (this check is skipped with `--force`). Delete the folder by hand if the page should go.
+
+### Home image fillers
+
+A Home image filler is a note that only holds an image for a tile of the Home grid. Add its link (either URL form) to `src/content/hedgedoc-urls.txt` like any other note. The note looks like this:
+
+```markdown
+---
+type: home-image-filler
+accent: about            # about | event | publication | artifact
+tags: website/page       # HedgeDoc tag, kept as it is
+position: 2              # position in the Home grid
+---
+
+![alt text for screen readers](https://pad.dsl.unibe.ch/uploads/<id>.webp
+ "Optional caption (ignored on Home)")
+```
+
+- It is written to `src/content/home-image-fillers/<note id>/index.md`, with the image in `assets/`. The folder is the canonical note id in lowercase (`slug:` and titles are ignored), so it never changes.
+- The front matter is kept as it is, comments included; `source:` and `importedAt:` are added, as for every page. The body is the image, with its link rewritten to `./assets/<file>` and its alt text and caption kept.
+- The script refuses a filler, reports it as an error and moves on, when:
+  - `accent` is not one of `about`, `event`, `publication`, `artifact`;
+  - `position` is not a whole number from 1 up (a quoted `"3"` is not a number), or another filler already has it. Fillers already imported keep their position; within one run, the first filler in the list wins;
+  - the body does not hold exactly one image written as `![alt text](url "caption")`, holds anything else (text, headings, a second image), or the alt text is empty.
+- Any position is allowed, 1 included: the Home layout decides what each position holds.
+- Nothing reads the fillers yet: the Home page loader will look for them in `src/content/home-image-fillers/`.
 
 ## Svelte
 
