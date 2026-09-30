@@ -21,7 +21,8 @@ const SECTIONS = {
 	publication: 'publications',
 	artifact: 'artifacts',
 	about: 'about',
-	team: 'about/team'
+	team: 'about/team',
+	"home-filler": 'home-filler'
 };
 const FALLBACK_TYPE = 'about';
 const SLUG_MAX_LENGTH = 60;

@@ -5,6 +5,8 @@
 	import '@fontsource-variable/mona-sans/wght-italic.css';
 	// Bitcount Prop Single: all axes, custom ones included.
 	import '@fontsource-variable/bitcount-prop-single/full.css';
+	// JetBrains Mono: weight axis only.
+	import '@fontsource-variable/jetbrains-mono/wght.css';
 	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();

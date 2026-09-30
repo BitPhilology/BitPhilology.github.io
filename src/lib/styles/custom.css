@@ -1,11 +1,1 @@
 /* Hand-written overrides. They win over the tokens and Tailwind's defaults. */
-
-/* Self-hosted fonts (Fontsource), imported in src/routes/+layout.svelte. */
-@theme {
-	--font-sans: "Mona Sans Variable", ui-sans-serif, system-ui, sans-serif;
-	--font-pixel: "Bitcount Prop Single Variable", ui-monospace, monospace;
-
-	/* Pin Bitcount's custom axes on every `font-pixel` element.
-	   Ranges: CRSV 0–1, ELSH 0–100, ELXP 0–100 (slnt and wght go through font-style and font-weight). */
-	/* --font-pixel--font-variation-settings: "CRSV" 0.5, "ELSH" 0, "ELXP" 0; */
-}

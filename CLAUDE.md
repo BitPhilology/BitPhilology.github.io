@@ -10,6 +10,7 @@ The Bit Philology website: a static site built with SvelteKit and deployed to Gi
 - `@sveltejs/adapter-static`: every route is prerendered (`export const prerender = true` in `src/routes/+layout.ts`) and the site is written to `build/`
 - Tailwind CSS v4 through `@tailwindcss/vite`, with no plugins
 - Fonts self-hosted with Fontsource
+- Icons from `pixelarticons`
 - Node 24 (LTS) and npm
 
 ## Commands
@@ -41,7 +42,7 @@ theme, base, tokens, components, custom, utilities
 ```
 
 - `theme`, `base`, `components` and `utilities` are Tailwind's layers.
-- `tokens` holds `src/lib/styles/tokens.css`, generated from the Figma tokens. Never edit it by hand: regenerate it.
+- `tokens` holds `src/lib/styles/tokens.css`, the design tokens: the self-hosted fonts and the semantic colours. The repository is the source of truth: Figma's variables mirror these tokens, not the other way round.
 - `custom` holds `src/lib/styles/custom.css`, hand-written overrides owned by the maintainer. Edit it only when explicitly asked.
 - `src/content` is excluded from Tailwind's class detection (`@source not "./content"`).
 
@@ -52,6 +53,17 @@ Tailwind merges every `@theme` block into the `theme` layer, whichever file it s
 - The primitives are Tailwind v4's default palette, in OKLCH. Never redefine them, and never reset a theme namespace (no `--color-*: initial` or similar).
 - Semantic tokens point to Tailwind's variables, e.g. `var(--color-pink-500)`.
 - In markup, use the design system's colors (the semantic tokens), not the raw palette.
+- The semantic tokens live in the second `@theme` block of `tokens.css`. Each mirrors a variable of the `Colors` collection in Figma, with slashes turned into hyphens: `category/about/main` is `--color-category-about-main` (utilities `bg-category-about-main`, `text-category-about-main`, …).
+
+| Figma variable | CSS variable | Tailwind colour |
+| --- | --- | --- |
+| `category/about/{lighter,main,darker}` | `--color-category-about-*` | teal-50, emerald-700, teal-900 |
+| `category/event/{lighter,main,darker}` | `--color-category-event-*` | pink-50, pink-500, pink-800 |
+| `category/publication/{lighter,main,darker}` | `--color-category-publication-*` | orange-100, orange-600, amber-800 |
+| `category/artifact/{lighter,main,darker}` | `--color-category-artifact-*` | blue-50, cyan-600, sky-800 |
+| `surface/light-background`, `surface/dark-background` | `--color-surface-*` | neutral-100, emerald-950 |
+| `surface/white`, `surface/subtle` | `--color-surface-*` | white, neutral-50 |
+| `text/neutral-on-light-bg`, `text/neutral-on-dark-bg` | `--color-text-*` | emerald-950, neutral-100 |
 
 ### Spacing and breakpoints
 
@@ -60,12 +72,33 @@ Tailwind merges every `@theme` block into the `theme` layer, whichever file it s
 
 ### Fonts
 
-Self-hosted with Fontsource, imported in `src/routes/+layout.svelte` and registered in the `@theme` block of `custom.css`:
+Self-hosted with Fontsource, imported in `src/routes/+layout.svelte` and registered in the first `@theme` block of `tokens.css`:
 
 - Mona Sans (`font-sans`, the default): `@fontsource-variable/mona-sans`, files `wght.css` and `wght-italic.css` (weight axis only). If the width axis is ever needed, switch to `standard.css` and `standard-italic.css`.
+- JetBrains Mono (`font-mono`, for code): `@fontsource-variable/jetbrains-mono`, file `wght.css` (weight axis only).
 - Bitcount Prop Single (`font-pixel`): `@fontsource-variable/bitcount-prop-single`, file `full.css` (all axes, custom ones included).
 
 Never load fonts from Google Fonts or any other external service.
+
+### Icons
+
+The icons come from [pixelarticons](https://pixelarticons.com) (`pixelarticons` on npm): pixel-art icons on a 24×24 grid, in four styles (base, `-sharp`, `-solid`, `-glyph`). Render them with `src/lib/components/Icon.svelte`, passing the raw SVG:
+
+```svelte
+<script lang="ts">
+	import bookOpen from 'pixelarticons/svg/book-open.svg?raw';
+	import Icon from '$lib/components/Icon.svelte';
+</script>
+
+<Icon svg={bookOpen} class="size-12" />
+<Icon svg={bookOpen} label="Read more" />
+```
+
+- Import each icon from `pixelarticons/svg/<name>.svg?raw` and name the variable after the icon in camelCase. Only the imported icons end up in the bundle.
+- Icons take the current text color: color them with text utilities.
+- Size them in multiples of 24 px to keep the pixels sharp: `size-6` (the default, 24 px), `size-12`, `size-18`, `size-24`.
+- An icon without `label` is decorative and hidden from screen readers. Give it a `label` when it carries meaning on its own, such as an icon-only link.
+- Never use `pixelarticons/react` or the webfont. npm installs `react` as a peer dependency of the package, but nothing imports it.
 
 ### Svelte components
 
