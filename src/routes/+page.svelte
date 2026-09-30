@@ -1,9 +1,22 @@
-<main>
-	<section>
-		<h2>Project description</h2>
-		<p>Bit Philology is a SNSF Starting Grant project running from 2025 to 2030.</p>
-		<p>Today, much literature is created digitally. Literary archives, which preserve the manuscripts of writers, increasingly include digital documents (known as ‘born-digital’), which pose challenges for their study. The Bit Philology project will propose innovative solutions for describing, editing and analysing digital literary archives, while meeting the scientific and societal needs of our digital age.</p>
-		<p>Philology is a discipline that is thousands of years old. Textual scholars have studied and continue to study papyri, manuscripts, epigraphic and printed sources, and have developed methodological tools to work with texts preserved in different forms and on different media. But what happens when a text is born digital? A growing number of born-digital texts are currently being archived, including documents of historical importance and literary material. This project focuses on the latter, the born-digital literary archive, as a source for the philology of the present and the future.</p>
-		<p>Scholarship on born-digital sources has identified the need for a rethinking of traditional methodologies in order to transform the born-digital source into a scholarly object of study. The Bit Philology project seeks to respond to this need by describing, editing and analysing born-digital literary sources. The aim of the project is to establish a methodological and technical toolkit for the study of born-digital literary sources created before the advent of cloud computing. The project is highly interdisciplinary and will combine approaches from digital humanities (data modelling, distant reading); authorial philology (filologia d’autore) and genetic criticism (critique génétique); the philological tradition concerned with the materiality of textual documents (filologia materiale, material bibliography, digital forensics); media and software studies; information design.</p>
+<!-- Temporary test page for Tailwind and the self-hosted fonts. Replace it with the real home page. -->
+<main class="space-y-10 p-6">
+	<section class="space-y-2">
+		<h1 class="text-sm">Mona Sans Variable · font-sans</h1>
+		<p class="text-3xl font-extralight">200 · Born-digital literary archives 0123456789</p>
+		<p class="text-3xl font-extralight italic">200 italic · Born-digital literary archives 0123456789</p>
+		<p class="text-3xl font-normal">400 · Born-digital literary archives 0123456789</p>
+		<p class="text-3xl font-normal italic">400 italic · Born-digital literary archives 0123456789</p>
+		<p class="text-3xl font-black">900 · Born-digital literary archives 0123456789</p>
+		<p class="text-3xl font-black italic">900 italic · Born-digital literary archives 0123456789</p>
+	</section>
+
+	<section class="space-y-2">
+		<h2 class="text-sm">Bitcount Prop Single Variable · font-pixel</h2>
+		<p class="font-pixel text-3xl">Bit Philology 0123456789</p>
+	</section>
+
+	<section class="space-y-2">
+		<h2 class="text-sm">bg-pink-500</h2>
+		<div class="size-24 bg-pink-500"></div>
 	</section>
 </main>

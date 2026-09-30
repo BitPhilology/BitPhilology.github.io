@@ -1,0 +1,1 @@
+@../LLM-ASSISTANT.md
