@@ -8,38 +8,26 @@
 	// JetBrains Mono: weight axis only.
 	import '@fontsource-variable/jetbrains-mono/wght.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import CategoryTheme from '$lib/components/content/CategoryTheme.svelte';
+	import NavDock from '$lib/components/layout/NavDock.svelte';
+	import TopStroke from '$lib/components/layout/TopStroke.svelte';
+	import { activeCategory } from '$lib/navigation/activeCategory';
 
-	let { children } = $props();
+	let { data, children } = $props();
+
+	const category = $derived(activeCategory());
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<header>
-	<a href="/">Bit Philology</a>
-	<nav>
-		<a href="/">Home</a>
-		<a href="/events">Events</a>
-		<a href="/outputs">Outputs</a>
-		<a href="/team">Team</a>
-	</nav>
-</header>
-
-{@render children()}
-
-<footer>
-	<p><a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></p>
-	<p><a href="https://www.dh.unibe.ch/">Digital Humanities, University of Bern</a></p>
-	<div aria-label="Space for partner logos">
-		<a href="https://www.dh.unibe.ch/" aria-label="Digital Humanities, University of Bern">
-			<img
-				class="h-20 w-auto"
-				src="https://dhbern.github.io/logo.webp"
-				alt="Digital Humanities, University of Bern logo"
-			/>
-		</a>
-		<div>Logo space</div>
-		<div>Logo space</div>
+<!-- The page theme: the active category colours the top stroke, the dock and the focus rings. -->
+<CategoryTheme {category}>
+	<TopStroke />
+	<!-- The bottom padding keeps the end of the page clear of the fixed dock. -->
+	<div class="pb-16">
+		{@render children()}
 	</div>
-</footer>
+	<NavDock sheets={data.sheets} active={category} />
+</CategoryTheme>

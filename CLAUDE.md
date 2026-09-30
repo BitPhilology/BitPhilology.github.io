@@ -13,6 +13,8 @@ The Bit Philology website: a static site built with SvelteKit and deployed to Gi
 - Icons from `pixelarticons`
 - Node 24 (LTS) and npm
 
+How the code in `src/lib` and `src/routes` turns the content into pages (loader, Home tile rule, category registry and theming, components, navigation dock) is described in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Read it before changing that code, and keep it up to date.
+
 ## Commands
 
 | Command | What it does |
@@ -119,7 +121,7 @@ src/content/
   home-image-fillers/<note id>/index.md   a Home image filler (see below)
 ```
 
-- Sections: `events`, `publications`, `artifacts`, `about`, `about/team` for the team cards, and `home-image-fillers` for the image tiles of the Home grid.
+- Sections: `events`, `publications`, `artifacts`, `about`, `about/team` for the team page (a single note, `type: team`, which lists the members in its front matter), and `home-image-fillers` for the image tiles of the Home grid.
 - The files in `src/content` are data: the import script never touches `src/routes` or any other code.
 - A page with `source:` in its front matter was imported from HedgeDoc. To change it, edit the note on HedgeDoc and re-import it with `--force`: local edits to an imported page are lost on re-import.
 - A `.md` file without `source:` is hand-written. Never touch it, and neither does the script.
@@ -154,13 +156,13 @@ For each URL in `src/content/hedgedoc-urls.txt` (empty lines and lines starting 
 4. Picks the section from `type` (lowercase, no spaces): `event` → `events`, `publication` → `publications`, `artifact` → `artifacts`, `about` → `about`, `team` → `about/team`, `home-image-filler` → `home-image-fillers`. A missing or unknown type falls back to `about`, with a warning.
 5. Computes the slug from `slug:` or else from the title: Markdown and accents removed, lowercase, only `a-z`, `0-9` and hyphens, cut at a hyphen around 60 characters. Without a title, it uses the note id. Home image fillers always use the note id, and are validated first (see below).
 6. Never overwrites: if `<section>/<slug>/index.md` exists with another source or without `source:`, it reports a conflict and moves on. A folder without `index.md` (such as `about/team`) is not a conflict.
-7. Downloads every linked image, from HedgeDoc or elsewhere, into `assets/` and rewrites the links as `./assets/<file>`, keeping alt text and title. It handles `![alt](url "title")`, the HedgeDoc size syntax `url =WxH`, reference definitions `[id]: url` and `<img src="…">`, and ignores code. If an image fails, the original link stays and it is reported.
+7. Downloads every linked image, from HedgeDoc or elsewhere, into `assets/` and rewrites the links as `./assets/<file>`, keeping alt text and title. It handles `![alt](url "title")`, the HedgeDoc size syntax `url =WxH`, reference definitions `[id]: url` and `<img src="…">`, and ignores code. It also downloads the images of the front matter fields named `photo`, at any depth (e.g. the `photo` of each entry in the team's `members` list), and sets the field to `./assets/<file>`; to download other fields, add their name to `IMAGE_FIELDS` in the script. Images from placeholder services (`picsum.photos`, `placehold.co`, `placeholder.com`, `dummyimage.com`, `loremflickr.com`, `placekitten.com`, `fakeimg.pl`, and their subdomains) are not downloaded: their URL stays as it is, and they are listed in the summary. If an image fails, the original link stays and it is reported.
 8. Adds `source:` (canonical URL) and `importedAt:` (ISO timestamp) to the front matter, keeping every other field, the comments and the formatting (it uses the `yaml` library, never regular expressions, for the front matter).
 9. Writes `index.md`. The body stays identical apart from the image links (and a final newline).
 
 `--force <path>` re-imports that page and replaces its `index.md` and `assets/`. If the note's type or slug changed, the page moves to the new place: the old `index.md` and `assets/` are deleted, and the old folder too if nothing else is left in it.
 
-Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the images downloaded or failed, the links to other HedgeDoc notes found in the text (not rewritten yet) and the imported pages whose link is no longer in the list. The exit code is 1 if there were errors, conflicts or failed images.
+Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the images downloaded or failed, the placeholder images kept as links, the links to other HedgeDoc notes found in the text (not rewritten yet) and the imported pages whose link is no longer in the list. The exit code is 1 if there were errors, conflicts or failed images.
 
 The script never deletes a page because its link left the list: it lists it under "Pages no longer in src/content/hedgedoc-urls.txt, kept" (this check is skipped with `--force`). Delete the folder by hand if the page should go.
 
@@ -186,8 +188,8 @@ position: 2              # position in the Home grid
   - `accent` is not one of `about`, `event`, `publication`, `artifact`;
   - `position` is not a whole number from 1 up (a quoted `"3"` is not a number), or another filler already has it. Fillers already imported keep their position; within one run, the first filler in the list wins;
   - the body does not hold exactly one image written as `![alt text](url "caption")`, holds anything else (text, headings, a second image), or the alt text is empty.
-- Any position is allowed, 1 included: the Home layout decides what each position holds.
-- Nothing reads the fillers yet: the Home page loader will look for them in `src/content/home-image-fillers/`.
+- `position` is the 1-based index in the Home grid. Any position is allowed, 1 included: position 1 is the first tile and holds the logo filler.
+- The Home loader reads the fillers from `src/content/home-image-fillers/` and validates them again at build time: an invalid filler or two fillers with the same position fail the build (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-home-tile-rule)).
 
 ## Svelte
 

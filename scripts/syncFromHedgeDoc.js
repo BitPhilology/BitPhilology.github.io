@@ -11,7 +11,7 @@
 import { mkdir, readFile, readdir, rm, rmdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isMap, parseDocument } from 'yaml';
+import { isMap, isScalar, isSeq, parseDocument } from 'yaml';
 
 const HEDGEDOC = 'https://pad.dsl.unibe.ch';
 const HEDGEDOC_HOST = new URL(HEDGEDOC).hostname;
@@ -47,6 +47,18 @@ const EXTENSION_BY_TYPE = {
 	'image/x-icon': '.ico'
 };
 const IMAGE_EXTENSIONS = new Set([...Object.values(EXTENSION_BY_TYPE), '.jpeg', '.tiff']);
+// Front matter fields that hold an image URL, at any depth (e.g. `photo` in the team's `members`).
+const IMAGE_FIELDS = new Set(['photo']);
+// Image placeholder services (and their subdomains): their images are not downloaded and their URLs stay.
+const PLACEHOLDER_HOSTS = [
+	'picsum.photos',
+	'placehold.co',
+	'placeholder.com',
+	'dummyimage.com',
+	'loremflickr.com',
+	'placekitten.com',
+	'fakeimg.pl'
+];
 const SPECIAL_LETTERS = { ß: 'ss', æ: 'ae', œ: 'oe', ø: 'o', ł: 'l', đ: 'd', þ: 'th' };
 // Top-level HedgeDoc paths that are not notes.
 const RESERVED_PATHS = new Set(['s', 'p', 'new', 'uploads', 'login', 'logout', 'me', 'history', 'status', 'config']);
@@ -77,6 +89,7 @@ const report = {
 	warnings: [],
 	images: [],
 	failedImages: [],
+	placeholders: [],
 	noteLinks: [],
 	unlisted: []
 };
@@ -442,19 +455,27 @@ function excerpt(text) {
 // Images
 
 /**
- * Downloads the images of a note and points their links to ./assets/<file>.
- * Rewrites note.body in place and returns the files to write. In a dry run, downloads nothing.
+ * Downloads the images of a note, from its body and from the image fields of its front matter,
+ * and points their links to ./assets/<file>. Images from placeholder services keep their URL.
+ * Rewrites note.body and note.doc in place and returns the files to write. In a dry run,
+ * downloads nothing.
  */
 async function localizeImages(note, dir, dryRun) {
 	const spans = findImageUrls(note.body);
-	const byUrl = new Map(); // resolved URL -> file name, or null if it failed
+	const fields = findImageFields(note.doc.contents);
+	const byUrl = new Map(); // resolved URL -> file name, or null if it failed or is a placeholder
 	const usedNames = new Set();
 	const files = [];
 	const target = `${pagePath(dir, 'assets')}/`;
 
-	for (const span of spans) {
-		const url = resolveImageUrl(span.raw);
+	for (const raw of [...spans.map((span) => span.raw), ...fields.map((field) => field.value)]) {
+		const url = resolveImageUrl(raw);
 		if (!url || byUrl.has(url)) continue;
+		if (isPlaceholder(url)) {
+			byUrl.set(url, null);
+			report.placeholders.push({ dir, url });
+			continue;
+		}
 		if (dryRun) {
 			const file = fileNameFor(url, null, usedNames);
 			byUrl.set(url, file);
@@ -479,7 +500,28 @@ async function localizeImages(note, dir, dryRun) {
 		const file = byUrl.get(resolveImageUrl(span.raw));
 		if (file) note.body = note.body.slice(0, span.start) + `./assets/${file}` + note.body.slice(span.end);
 	}
+	// Setting the value of a scalar keeps its comments and the rest of the front matter as they are.
+	for (const field of fields) {
+		const file = byUrl.get(resolveImageUrl(field.value));
+		if (file) field.value = `./assets/${file}`;
+	}
 	return files;
+}
+
+/** The scalars of the front matter under an image field (IMAGE_FIELDS), at any depth, that hold text. */
+function findImageFields(node) {
+	if (isSeq(node)) return node.items.flatMap(findImageFields);
+	if (!isMap(node)) return [];
+	return node.items.flatMap(({ key, value }) => {
+		const isImage = IMAGE_FIELDS.has(isScalar(key) ? String(key.value) : String(key));
+		if (isImage && isScalar(value) && typeof value.value === 'string' && value.value.trim()) return [value];
+		return findImageFields(value);
+	});
+}
+
+function isPlaceholder(url) {
+	const { hostname } = new URL(url);
+	return PLACEHOLDER_HOSTS.some((host) => hostname === host || hostname.endsWith(`.${host}`));
 }
 
 async function downloadImage(url) {
@@ -827,6 +869,11 @@ function printSummary(dryRun) {
 	section('Images not downloaded, original link kept', report.failedImages, (image) =>
 		`${pagePath(image.dir)}: ${image.url} (${image.reason})`
 	);
+	if (report.placeholders.length) {
+		section('Placeholder images, not downloaded, link kept', report.placeholders, (image) =>
+			`${pagePath(image.dir)}: ${image.url}`
+		);
+	}
 	section('Links to other HedgeDoc notes, not rewritten', report.noteLinks, (link) => `${pagePath(link.dir)}: ${link.url}`);
 	if (report.unlisted.length) {
 		section(`Pages no longer in ${relative(URL_LIST)}, kept`, report.unlisted, (p) =>

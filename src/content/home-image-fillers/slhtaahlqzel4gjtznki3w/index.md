@@ -7,7 +7,7 @@ accent: event # one of the categories except from "home-image-filler"
 tags: website/home-image-filler # for HedgeDoc
 
 # where the tile sits in the Home grid, such as 2 or 6. The Figma layout places the fillers at fixed spots. Without a position the loader would have to guess.
-position: 2
+position: 14
 source: https://pad.dsl.unibe.ch/sLHtAaHLQZel4gJtZnkI3w
 importedAt: 2026-09-30T21:02:55Z
 

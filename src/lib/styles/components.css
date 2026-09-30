@@ -1,0 +1,52 @@
+/* Component CSS that utilities cannot express. Imported into the `components` layer. */
+
+/* Category theming. <CategoryTheme category="…"> sets data-category; here each category maps the
+   three accent variables that components use to the colour tokens. Components only read
+   var(--cat-lighter), var(--cat-main) and var(--cat-darker). The names match `Category` in
+   src/lib/categories.ts. */
+[data-category="home"] {
+	--cat-lighter: var(--color-surface-subtle);
+	--cat-main: var(--color-text-neutral-on-light-bg);
+	--cat-darker: var(--color-text-neutral-on-light-bg);
+}
+
+[data-category="about"] {
+	--cat-lighter: var(--color-category-about-lighter);
+	--cat-main: var(--color-category-about-main);
+	--cat-darker: var(--color-category-about-darker);
+}
+
+[data-category="event"] {
+	--cat-lighter: var(--color-category-event-lighter);
+	--cat-main: var(--color-category-event-main);
+	--cat-darker: var(--color-category-event-darker);
+}
+
+[data-category="publication"] {
+	--cat-lighter: var(--color-category-publication-lighter);
+	--cat-main: var(--color-category-publication-main);
+	--cat-darker: var(--color-category-publication-darker);
+}
+
+[data-category="artifact"] {
+	--cat-lighter: var(--color-category-artifact-lighter);
+	--cat-main: var(--color-category-artifact-main);
+	--cat-darker: var(--color-category-artifact-darker);
+}
+
+/* Visible focus for every link and button, in the colour of the surrounding category. */
+:focus-visible {
+	outline: 2px solid var(--cat-darker, currentColor);
+	outline-offset: 2px;
+}
+
+/* Dithered strip (top stroke, dock cap). Figma draws it as a 400 px wide image clipped by its
+   frame, which would stop short on a wider cell. Here it is a 16 × 8 tile of 2 px pixels (a full
+   row, then every 2nd, 4th and 8th pixel) repeated along x and clipped by the box, so it covers
+   any width without scaling the pixels. The tile is a mask: the colour is --cat-main. */
+.dither {
+	background-color: var(--cat-main);
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 0h16v2H0zM2 2h2v2H2zM6 2h2v2H6zM10 2h2v2h-2zM14 2h2v2h-2zM4 4h2v2H4zM12 4h2v2h-2zM8 6h2v2H8z'/%3E%3C/svg%3E");
+	mask-repeat: repeat-x;
+	mask-size: calc(var(--spacing) * 4) calc(var(--spacing) * 2);
+}

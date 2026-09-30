@@ -1,5 +1,6 @@
 @layer theme, base, tokens, components, custom, utilities;
 @import "tailwindcss";
 @import "./lib/styles/tokens.css" layer(tokens);
+@import "./lib/styles/components.css" layer(components);
 @import "./lib/styles/custom.css" layer(custom);
 @source not "./content";
