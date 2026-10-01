@@ -28,6 +28,10 @@ export interface Post {
 	keywords: string[];
 	/** Artifacts: what kind of object it is, shown as the first pill. */
 	kind?: string;
+	/** Publications: the DOI, as `10.5281/zenodo.…` or as a URL. */
+	doi?: string;
+	/** Publications: the file to download (the `download-link` field). */
+	downloadLink?: string;
 }
 
 /** The categories an image filler can take its colour from. */
@@ -61,22 +65,46 @@ export interface Member {
 }
 
 /**
- * A part of a rendered body: HTML rendered from the markdown, or an embed that the body places
- * with a marker such as {{team}} (src/lib/embeds.ts).
+ * A sidenote: a footnote of the body ([^label] in the text, [^label]: … as its own paragraph). It is
+ * shown beside the block that first refers to it from lg, and right after that block below lg.
  */
-export type BodySegment =
-	| { kind: 'html'; html: string }
+export interface Note {
+	/** The id of the note, which its references link to: "sidenote-01". */
+	id: string;
+	/** The number on the reference and on the note: "01". */
+	label: string;
+	/** The note text, as inline HTML. */
+	html: string;
+}
+
+/**
+ * A block of a rendered body: one top-level element of the markdown, shown as one row of the page
+ * grid (src/lib/styles/grid.ts). `html` is a paragraph, a heading, a list…, with the notes it refers
+ * to; `figure` an image alone in its paragraph, with its title as the caption; `embed` a component
+ * that a marker such as {{team}} places (src/lib/embeds.ts).
+ */
+export type BodyBlock =
+	| { kind: 'html'; html: string; notes: Note[] }
+	| { kind: 'figure'; src: string; alt: string; caption?: string }
 	| { kind: 'embed'; name: string; data: unknown };
+
+/** A heading of the body (h2), for the page index. */
+export interface Heading {
+	id: string;
+	text: string;
+}
 
 /** The body of a post, rendered at build time by src/lib/server/markdown.ts. */
 export interface RenderedBody {
-	/** The HTML inside the lead paragraph (the first paragraph, unless it starts with [no-lead]). */
-	lead?: string;
-	segments: BodySegment[];
+	/** The blocks in the editor's order; the first paragraph is the lead, unless it starts with [no-lead]. */
+	blocks: BodyBlock[];
+	headings: Heading[];
 }
 
-/** What a post page gets: the post and its rendered body. */
+/** What a post page gets: the post, its rendered body and the posts of its category. */
 export interface PostPage {
 	post: Post;
 	body: RenderedBody;
+	/** Every post of the same category, newest first (Team is listed under About). */
+	section: PostLink[];
 }

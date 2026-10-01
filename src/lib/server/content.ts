@@ -65,12 +65,16 @@ export function getPost(path: string): Post | undefined {
 	return sources.get(path)?.post;
 }
 
-/** A post page: the post and its body, rendered (lead and segments). */
+/** A post page: the post, its body rendered as blocks, and the posts of its category for the page index. */
 export function getPage(path: string): PostPage | undefined {
 	const source = sources.get(path);
 	if (!source) return undefined;
 	const { post, file, folder, data, body } = source;
-	return { post, body: renderBody(body, { file, data, resolveAsset: (src) => resolveAsset(folder, src) }) };
+	return {
+		post,
+		body: renderBody(body, { file, data, resolveAsset: (src) => resolveAsset(folder, src) }),
+		section: getSheets()[categoryOf(post.type)] ?? []
+	};
 }
 
 /** The posts of each dock category, newest first, for the page sheet. Team is listed under About. */

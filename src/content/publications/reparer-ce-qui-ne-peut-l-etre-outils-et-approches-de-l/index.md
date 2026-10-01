@@ -12,21 +12,22 @@ title: "Réparer ce qui ne peut l’être : outils et approches de l’établiss
 date: 2026-11-13
 
 # the location of an event, or the publication venue of a contribution
-venue: "Stabiliser l’instable” session at the concluding conference of the Huma-Num ARIANE consortium"
+venue: "Huma-Num ARIANE Conference"
 location: Sorbonne University, Paris
 
 # if this is a publication, which type? The field is ignored for other posts types
-publication-type: oral communication
+publication-type: Oral Communication
 
-doi:
+doi: test/1.2.3.4.5
 
-download-link:
+download-link: https://example.com/download
 
 # keywords are visibile in home grid only for artifacts.
-keywords:
-- born-digital texts
-- textual scholarship
-- digital forensics
+# keywords:
+# - born-digital texts
+# - textual scholarship
+# - digital forensics
+
 source: https://pad.dsl.unibe.ch/idRHfXJOTK6WttOfUjS_fg
 importedAt: 2026-09-30T21:28:01Z
 

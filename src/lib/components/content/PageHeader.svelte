@@ -1,24 +1,19 @@
 <!--
-	Page header (Figma "Page Header"): the page's only h1 and its lead paragraph, the first paragraph
-	of the body (rendered to HTML at build time). The title is heading/h1 on phones and
-	display/page-title from sm.
+	Page header (Figma "Page Header" of the About, Team and Artifacts frames): the default header of
+	a post page. The page's only h1, heading/h1 on phones and display/page-title from sm, then the
+	subtitle in body/lead-paragraph. Headers of other types add their lines below (children), e.g.
+	EventHeader. The lead paragraph is the first block of the body, not part of the header.
 -->
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+	import type { Post } from '$lib/content/types';
 	import { PAGE_TITLE, TEXT } from '$lib/styles/text';
 
-	interface Props {
-		title: string;
-		subtitle?: string;
-		/** The HTML inside the lead paragraph. */
-		lead?: string;
-	}
-
-	let { title, subtitle, lead }: Props = $props();
+	let { post, children }: { post: Post; children?: Snippet } = $props();
 </script>
 
 <header class="flex flex-col gap-4">
-	<h1 class={PAGE_TITLE}>{title}</h1>
-	{#if subtitle}<p class={TEXT['card/subtitle']}>{subtitle}</p>{/if}
-	<!-- Built from the repository's markdown with raw HTML dropped, so it is safe to inject. -->
-	{#if lead}<p class={TEXT['body/lead-paragraph']}>{@html lead}</p>{/if}
+	<h1 class={PAGE_TITLE}>{post.title}</h1>
+	{#if post.subtitle}<p class={TEXT['body/lead-paragraph']}>{post.subtitle}</p>{/if}
+	{@render children?.()}
 </header>

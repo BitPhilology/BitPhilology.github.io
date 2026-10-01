@@ -36,7 +36,7 @@ export function isEmbedName(name: string): name is EmbedName {
 	return Object.hasOwn(EMBEDS, name);
 }
 
-/** The component of an embed and its props, for MarkdownBody. */
+/** The component of an embed and its props, for BodyBlocks. */
 export function embedView(name: string, data: unknown) {
 	if (!isEmbedName(name)) throw new Error(`Unknown embed "${name}".`);
 	return { component: EMBEDS[name].component as Component<{ data: unknown }>, props: { data } };

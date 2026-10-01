@@ -1,51 +1,39 @@
 <!--
-	Page shell (the grid of the page frames, e.g. Figma "Team"): the layout of every post page, in the
-	post's category colours. One column on phones and at sm, three at lg, four at xl, with 16 px gaps:
-
-	           meta row      header, body     notes
-	   lg      cols 1–3      cols 1–2         col 3
-	   xl      cols 1–4      cols 2–3         col 4
-
-	The template fills the body (children) and, if it has them, the notes. The footer tiles follow
-	in their own grid.
+	Page shell (the "Body (grid)" of the About, Events, Artifacts, Publications and Team frames): the
+	layout of every post page, in the post's category colours. The meta row, the page index (xl
+	only), then the article: the header (a snippet, the type's header) and the body (children), whose
+	blocks are rows of the grid with their notes beside them. The footer tiles follow in their own
+	grid. The columns of each breakpoint are in src/lib/styles/grid.ts.
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { categoryOf } from '$lib/categories';
+	import { POST_TYPES, categoryOf } from '$lib/categories';
 	import CategoryTheme from '$lib/components/content/CategoryTheme.svelte';
-	import PageHeader from '$lib/components/content/PageHeader.svelte';
 	import PostMetaRow from '$lib/components/content/PostMetaRow.svelte';
-	import type { Post } from '$lib/content/types';
+	import type { PostPage } from '$lib/content/types';
+	import { pageIndex } from '$lib/navigation/pageIndex';
+	import { GRID } from '$lib/styles/grid';
 	import Container from './Container.svelte';
 	import Footer from './Footer.svelte';
+	import PageIndex from './PageIndex.svelte';
 	import TileGrid from './TileGrid.svelte';
 
-	interface Props {
-		post: Post;
-		/** The HTML inside the lead paragraph. */
-		lead?: string;
-		notes?: Snippet;
-		children?: Snippet;
-	}
+	let { page, header, children }: { page: PostPage; header: Snippet; children: Snippet } = $props();
 
-	let { post, lead, notes, children }: Props = $props();
+	const category = $derived(categoryOf(page.post.type));
+	const pills = $derived(POST_TYPES[page.post.type].page.pills(page.post));
+	const index = $derived(pageIndex(page.post, page.body.headings, page.section));
 </script>
 
-<CategoryTheme category={categoryOf(post.type)}>
+<CategoryTheme {category}>
 	<main class="min-h-screen bg-surface-light-background">
-		<Container class="grid grid-cols-1 gap-4 pt-8 pb-4 text-(--cat-darker) lg:grid-cols-3 xl:grid-cols-4">
-			<div class="lg:col-span-3 lg:row-start-1 xl:col-span-4">
-				<PostMetaRow {post} />
-			</div>
-			<div class="lg:col-span-2 lg:row-start-2 xl:col-start-2">
-				<PageHeader title={post.title} subtitle={post.subtitle} {lead} />
-			</div>
-			{#if children}
-				<div class="lg:col-span-2 lg:row-start-3 xl:col-start-2">{@render children()}</div>
-			{/if}
-			{#if notes}
-				<aside class="lg:col-start-3 lg:row-start-3 xl:col-start-4">{@render notes()}</aside>
-			{/if}
+		<Container class={[GRID.page, 'pt-8 pb-4 text-(--cat-darker)']}>
+			<div class={GRID.meta}><PostMetaRow {category} {pills} /></div>
+			<!-- <PageIndex lists={index} class={GRID.index} /> -->
+			<article class={[GRID.article]}>
+				<div class={GRID.header}>{@render header()}</div>
+				{@render children()}
+			</article>
 		</Container>
 		<Container class="pb-4">
 			<TileGrid>

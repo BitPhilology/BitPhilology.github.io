@@ -1,7 +1,8 @@
 <!--
 	Pill (Figma "Pill"): a small outlined label in the current category colour, used in the meta row
 	of posts. `variant` mirrors the Figma "Type" property. With `href` it is a link: the arrow button
-	of a post card is an icon pill.
+	of a post card is an icon pill, the Download button of a publication a text pill. A label wider
+	than its row (a long venue on a phone) is cut with an ellipsis.
 -->
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
@@ -31,11 +32,11 @@
 	{href}
 	aria-label={variant === 'icon' ? label : undefined}
 	class={[
-		'inline-flex shrink-0 items-center justify-center border border-(--cat-darker) bg-surface-white whitespace-nowrap text-(--cat-darker)',
+		'inline-flex max-w-full shrink-0 items-center justify-center border border-(--cat-darker) bg-surface-white whitespace-nowrap text-(--cat-darker)',
 		TEXT['pixel/metadata'],
 		VARIANTS[variant]
 	]}
 >
 	{#if icon && variant !== 'text'}<Icon svg={icon} />{/if}
-	{#if variant !== 'icon'}{label}{/if}
+	{#if variant !== 'icon'}<span class="min-w-0 truncate">{label}</span>{/if}
 </svelte:element>

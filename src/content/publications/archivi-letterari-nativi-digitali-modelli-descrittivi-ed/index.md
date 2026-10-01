@@ -12,10 +12,10 @@ title: "Archivi letterari nativi digitali: modelli descrittivi ed edizioni speri
 date: 2026-06-03
 
 # the location of an event, or the publication venue of a contribution
-venue: "AIUCD 2026"
+venue: "AIUCD 2026, Cagliari"
 
 # if this is a publication, which type? The field is ignored for other posts types
-publication-type: poster
+publication-type: Poster
 
 # keywords are visibile in home grid only for artifacts.
 keywords:

@@ -1,6 +1,6 @@
 // The classes of the elements of a rendered markdown body, by tag name, added at build time by
 // src/lib/server/markdown.ts. They are the Figma text styles of TEXT; the colour comes from the
-// page (--cat-darker). The vertical rhythm between blocks is MarkdownBody's gap.
+// page (--cat-darker). The vertical rhythm between blocks is the gap of the page grid.
 import { TEXT } from './text';
 
 export const MARKDOWN_CLASSES: Partial<Record<string, string>> = {
@@ -21,3 +21,6 @@ export const MARKDOWN_CLASSES: Partial<Record<string, string>> = {
 	hr: 'border-(--cat-darker)',
 	img: 'max-w-full'
 };
+
+/** The lead paragraph, the first paragraph of a body (unless it starts with [no-lead]). */
+export const LEAD_CLASSES = TEXT['body/lead-paragraph'];

@@ -15,7 +15,7 @@ date: 2026-05-20
 venue: "Colloque Humanistica 2026"
 
 # if this is a publication, which type? The field is ignored for other posts types
-publication-type: poster
+publication-type: Poster
 
 # keywords are visibile in home grid only for artifacts.
 keywords:

@@ -16,7 +16,7 @@ venue: "Editopia: On the Future of Documentology and Scholarly Editing in the Po
 location: University of Wuppertal
 
 # if this is a publication, which type? The field is ignored for other posts types
-publication-type: oral communication
+publication-type: Oral Communication
 
 doi:
 

@@ -6,7 +6,8 @@ import home from 'pixelarticons/svg/home.svg?raw';
 import printer from 'pixelarticons/svg/printer.svg?raw';
 import robot from 'pixelarticons/svg/robot.svg?raw';
 import sparkle from 'pixelarticons/svg/sparkle.svg?raw';
-import { longDate, shortDate, yearOf } from '$lib/content/dates';
+import { longDate, monthYear, shortDate, yearOf } from '$lib/content/dates';
+import { present } from '$lib/content/fields';
 import type { Post } from '$lib/content/types';
 
 /**
@@ -50,16 +51,15 @@ interface PostEntry extends Entry {
 		pills: (post: Post) => string[];
 	};
 	page: {
-		/** The pills of the meta row of the post page, after the category signifier. */
+		/** The pills of the meta row of the post page, after the category signifier (Figma "Post Meta"). */
 		pills: (post: Post) => string[];
 	};
 }
 
 const excerpt = (post: Post): CardDescription | undefined =>
 	post.excerpt ? { text: post.excerpt, style: 'body' } : undefined;
-const present = (values: (string | undefined)[]) => values.filter((value): value is string => !!value);
 const hashtags = (post: Post) => post.keywords.map((keyword) => `#${keyword}`);
-// The publication date and the keywords, as in the meta row of the Team frames.
+// The publication date and the keywords, as in the meta row of the About and Team frames.
 const published = (date: string) => (date.includes('-') ? `Published on ${longDate(date)}` : `Published in ${date}`);
 const PAGE = { pills: (post: Post) => present([post.date && published(post.date), ...hashtags(post)]) };
 
@@ -100,7 +100,10 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 			description: (post) => (post.subtitle ? { text: post.subtitle, style: 'subtitle' } : undefined),
 			pills: (post) => present([post.date && shortDate(post.date), post.location ?? post.venue])
 		},
-		page: PAGE
+		// The date, the place and the keywords (Figma "Events").
+		page: {
+			pills: (post) => present([post.date && longDate(post.date), post.location ?? post.venue, ...hashtags(post)])
+		}
 	},
 	publication: {
 		label: 'Publication',
@@ -115,7 +118,11 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 			description: () => undefined,
 			pills: (post) => present([post.date && yearOf(post.date), post.publicationType])
 		},
-		page: PAGE
+		// The venue, the date, the keywords and the publication type (Figma "Publications").
+		page: {
+			pills: (post) =>
+				present([post.venue, post.date && longDate(post.date), ...hashtags(post), post.publicationType])
+		}
 	},
 	artifact: {
 		label: 'Artifact',
@@ -130,7 +137,10 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 			description: (post) => (post.authors ? { text: post.authors, style: 'body' } : excerpt(post)),
 			pills: (post) => present([post.kind, ...hashtags(post)])
 		},
-		page: PAGE
+		// When it went online, its kind and the keywords (Figma "Artifacts").
+		page: {
+			pills: (post) => present([post.date && `Online since ${monthYear(post.date)}`, post.kind, ...hashtags(post)])
+		}
 	}
 };
 

@@ -12,16 +12,21 @@ const plain = (value: unknown) => {
 	return raw && toPlainText(raw);
 };
 
-/** A post from its folder (relative to src/content), front matter and body. */
+/**
+ * A post from its folder (relative to src/content), front matter and body. Fails the build when a
+ * required field is missing: `title`, the page's h1. Every other field may be missing.
+ */
 export function toPost(path: string, data: FrontMatter, body: string): Post {
 	// `about` is the fallback type, as in the import script.
 	const type = isPostType(data.type) ? data.type : 'about';
 	const keywords = Array.isArray(data.keywords) ? data.keywords.map(String) : [];
+	const title = plain(data.title);
+	if (!title) throw new Error(`src/content/${path}/index.md: the front matter has no "title"; every page needs one.`);
 	return {
 		type,
 		path,
 		href: `/${path}`,
-		title: plain(data.title) ?? path,
+		title,
 		subtitle: plain(data.subtitle),
 		date: text(data.date),
 		excerpt: text(data.excerpt) ?? firstParagraph(body),
@@ -31,7 +36,9 @@ export function toPost(path: string, data: FrontMatter, body: string): Post {
 		location: text(data.location),
 		publicationType: text(data['publication-type']),
 		keywords,
-		kind: text(data.kind)
+		kind: text(data.kind),
+		doi: text(data.doi),
+		downloadLink: text(data['download-link'])
 	};
 }
 

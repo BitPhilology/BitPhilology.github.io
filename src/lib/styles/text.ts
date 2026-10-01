@@ -20,6 +20,8 @@ export const TEXT = {
 	'card/venue': 'text-xs leading-tight font-semibold',
 	'code/code': 'font-mono text-sm leading-normal font-medium',
 	'pixel/metadata': 'font-pixel text-xs leading-tight',
+	// Figma: 12 px with 0.4 px tracking; the nearest tracking utility is tracking-wide (0.3 px).
+	'pixel/caption': 'font-pixel text-xs leading-tight tracking-wide',
 	// Figma: 11 px with 0.4 px tracking; the nearest utilities are text-xs (12 px) and tracking-wide.
 	'pixel/note': 'font-pixel text-xs leading-tight tracking-wide'
 } as const;
