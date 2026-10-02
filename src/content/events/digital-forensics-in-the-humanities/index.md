@@ -91,10 +91,10 @@ tags: website/event
 
 # ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/ghrdFbhVQy-herciaypa8Q
-importedAt: 2026-10-01T18:49:01Z
+importedAt: 2026-10-02T15:47:15Z
 ---
 
-![](./assets/9a55f87e-fbaf-4dd8-9166-cc740653b74f.jpeg)
+![Photograph of a projected slide titled “Down the rabbit-hole: forensic examination and born-digitals”. Boxes labelled “provenance”, “authentication”, “materiality” and “format” are joined by lines to a rabbit drawing at the bottom of the slide.](./assets/94a91846-a0ee-4e83-b52e-ea7385a3597c.jpeg "A slide from the workshop: “Down the rabbit-hole: forensic examination and born-digitals”.")
 
 
 A full-day workshop organized by the Bit Philology project team and funded by the Swiss National Science Foundation (SNSF), taking place Friday 8 May 2026 at the University of Bern.

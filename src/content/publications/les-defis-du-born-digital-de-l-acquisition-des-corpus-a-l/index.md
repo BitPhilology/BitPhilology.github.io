@@ -91,7 +91,7 @@ tags: website/publication
 
 # ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/LVHdIwSuS2isE3pDWPLJnA
-importedAt: 2026-09-30T18:43:58Z
+importedAt: 2026-10-02T15:47:15Z
 ---
 
 The Bit Philology project presented a poster at the Colloque Humanistica 2026, held 20–22 May 2026 at EPITA, Paris.

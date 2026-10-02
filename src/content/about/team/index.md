@@ -85,7 +85,7 @@ advisory-board:
 excerpt:
 # Where the card sits in the Home grid: 1 is the first tile, 2 the second…; -1 is the last one.
 # Empty: the cards follow their date, newest first.
-position:
+position: -1
 # Write "true" to not display the content in the home page (e.g., as done for the "credits" page).
 hidden-from-home:
 
@@ -107,7 +107,7 @@ tags: website/team-page
 
 # ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/eXfd9t1LQui9OWZKRwYY0A
-importedAt: 2026-09-30T22:31:56Z
+importedAt: 2026-10-02T15:47:15Z
 ---
 
 The team working on the research project is composed by experts in Phylology, Digital Archives, Digital Born Materials, Information Visualization, and Digital Design.

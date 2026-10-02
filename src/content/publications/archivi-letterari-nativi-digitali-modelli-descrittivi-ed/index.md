@@ -91,7 +91,7 @@ tags: website/publication
 
 # ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/v66-dbipQ6msO0vn9NcMtw
-importedAt: 2026-09-30T18:43:03Z
+importedAt: 2026-10-02T15:47:15Z
 ---
 
 The Bit Philology project presented a poster at the XV Annual Conference of the Association for Humanities Computing and Digital Culture (AIUCD 2026), held 3–5 June 2026 at the University of Cagliari.

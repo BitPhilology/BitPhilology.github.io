@@ -21,7 +21,7 @@ title: Hard Drive
 accent: event
 # Where the image sits in the Home grid: 1 is the first tile, 2 the second…
 # Two images cannot have the same position.
-position: 13
+position: 14
 
 # ── TECHNICAL SETTINGS ────────────────────────────────────────────────
 # Leave it empty: the name of the image's folder is computed from its title when the image is imported.
@@ -42,8 +42,8 @@ tags: website/home-image-filler
 
 # ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/sLHtAaHLQZel4gJtZnkI3w
-importedAt: 2026-09-30T21:02:55Z
+importedAt: 2026-10-02T15:47:15Z
 ---
 
-![Black-and-white line drawing of a hard disk seen from above. A large circular platter is covered in thin concentric rings, with a small central hub held by six screws. A long arm on the left, labelled "Suspension Arm", reaches from a round "Rotary Actuator" toward the platter, where its tip, labelled "Slider", touches the surface.](./assets/hard-drive-components.png
+![Black-and-white line drawing of a hard disk seen from above. A large circular platter is covered in thin concentric rings, with a small central hub held by six screws. A long arm on the left, labelled "Suspension Arm", reaches from a round "Rotary Actuator" toward the platter, where its tip, labelled "Slider", touches the surface.](./assets/2aa049f0-6238-4922-a865-79235268af4a.png
  "A hard disk drive, seen from above. The platter is divided into thin concentric tracks. A rotary actuator swings the suspension arm across them, and the slider at its tip reads and writes the magnetic data on the track below it.")

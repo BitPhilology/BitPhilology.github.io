@@ -114,7 +114,7 @@ tags: website/page
 
 # ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/IMcrjOtPTSuAKrw46RXggg
-importedAt: 2026-09-30T18:43:03Z
+importedAt: 2026-10-02T15:47:15Z
 ---
 
 Today, much **literature** is created ~~on paper~~ *digitally*. Literary archives, which preserve the manuscripts of writers, increasingly include digital documents (known as *born-digital*), which pose challenges for their study. The **Bit Philology project** will propose innovative solutions for describing, editing and analyzing digital literary archives, while meeting the scientific and societal needs of our digital age.
