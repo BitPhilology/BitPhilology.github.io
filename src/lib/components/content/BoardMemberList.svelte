@@ -1,8 +1,8 @@
 <!--
 	Board member list: the advisory board of the About page, as a bulleted list styled like the
-	lists of the body. One item per entry of the `advisory_board` front matter list: the name, the
+	lists of the body. One item per entry of the `advisory-board` front matter list: the name, the
 	affiliation in brackets, and an icon that links to the member's page. An entry without
-	affiliation or externalURL is shown without the brackets or the icon. Placed in the body by the
+	affiliation or external-url is shown without the brackets or the icon. Placed in the body by the
 	{{advisory-board}} marker (src/lib/embeds.ts).
 -->
 <script lang="ts">

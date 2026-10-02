@@ -1,6 +1,6 @@
 // Turns the front matter and body of a markdown file into a Post, and orders posts.
 import { isPostType } from '$lib/categories';
-import { text } from './fields';
+import { flag, list, text } from './fields';
 import { firstParagraph, toPlainText } from './markdown';
 import type { Post } from './types';
 
@@ -19,7 +19,6 @@ const plain = (value: unknown) => {
 export function toPost(path: string, data: FrontMatter, body: string): Post {
 	// `about` is the fallback type, as in the import script.
 	const type = isPostType(data.type) ? data.type : 'about';
-	const keywords = Array.isArray(data.keywords) ? data.keywords.map(String) : [];
 	const title = plain(data.title);
 	const file = `src/content/${path}/index.md`;
 	if (!title) throw new Error(`${file}: the front matter has no "title"; every page needs one.`);
@@ -32,12 +31,12 @@ export function toPost(path: string, data: FrontMatter, body: string): Post {
 		date: text(data.date),
 		excerpt: text(data.excerpt) ?? firstParagraph(body),
 		position: toPosition(data.position, file),
-		hiddenFromHome: data['hidden-from-home'] === true,
+		hiddenFromHome: flag(data['hidden-from-home']),
 		authors: text(data.authors),
 		venue: text(data.venue),
 		location: text(data.location),
 		publicationType: text(data['publication-type']),
-		keywords,
+		keywords: list(data.keywords),
 		kind: text(data.kind),
 		doi: text(data.doi),
 		downloadLink: text(data['download-link'])

@@ -29,7 +29,7 @@ const embed = <T>(entry: Embed<T>) => entry;
 
 export const EMBEDS = {
 	team: embed({ field: 'members', parse: toMembers, component: MemberList }),
-	'advisory-board': embed({ field: 'advisory_board', parse: toBoardMembers, component: BoardMemberList })
+	'advisory-board': embed({ field: 'advisory-board', parse: toBoardMembers, component: BoardMemberList })
 };
 
 export type EmbedName = keyof typeof EMBEDS;

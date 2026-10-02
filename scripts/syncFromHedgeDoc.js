@@ -1,39 +1,69 @@
-// Imports the HedgeDoc notes listed in src/content/hedgedoc-urls.txt into
-// src/content/<section>/<slug>/index.md, with their images in assets/.
+// Imports the HedgeDoc notes listed in src/content/contents.yaml into
+// src/content/<section>/<slug>/index.md, with their images in assets/, and writes the list again,
+// filed by section: each page with its title, the link of its note and the day it was fetched.
 // Notes with `type: home-image-filler` are Home image fillers: they are validated and written
-// to src/content/home-image-fillers/<note id>/index.md.
+// to src/content/home-image-fillers/<slug>/index.md.
 // The rules are documented in CLAUDE.md, under "Content".
 //
 //   npm run syncFromHedgeDoc                        import the notes that are missing
 //   npm run syncFromHedgeDoc -- --dry-run           show what would happen, write nothing
 //   npm run syncFromHedgeDoc -- --force <path>      re-import one page, e.g. events/<slug>
+//   npm run syncFromHedgeDoc -- --refresh           re-import every page of the list
+//   npm run syncFromHedgeDoc -- --prune             also delete the pages taken off the list
+//   npm run syncFromHedgeDoc -- --rebuild-list      write the list again from the pages, offline
 
 import { mkdir, readFile, readdir, rm, rmdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isMap, isScalar, isSeq, parseDocument } from 'yaml';
+import { isMap, isScalar, isSeq, parseDocument, stringify } from 'yaml';
 
 const HEDGEDOC = 'https://pad.dsl.unibe.ch';
 const HEDGEDOC_HOST = new URL(HEDGEDOC).hostname;
 const CONTENT_DIR = fileURLToPath(new URL('../src/content/', import.meta.url));
-const URL_LIST = path.join(CONTENT_DIR, 'hedgedoc-urls.txt');
+const CONTENTS = path.join(CONTENT_DIR, 'contents.yaml');
 
 const SECTIONS = {
 	event: 'events',
 	publication: 'publications',
 	artifact: 'artifacts',
 	about: 'about',
-	team: 'about/team',
+	// The team page is a page of About: a note titled "Team" is src/content/about/team.
+	team: 'about',
 	'home-image-filler': 'home-image-fillers'
 };
 const FALLBACK_TYPE = 'about';
 const FILLER_SECTION = SECTIONS['home-image-filler'];
+// The sections of contents.yaml, in the order of the website, with the comment above each.
+const LIST_SECTIONS = [
+	['about', 'The pages of About: /about/<page>'],
+	['events', 'The events: /events/<page>'],
+	['publications', 'The publications: /publications/<page>'],
+	['artifacts', 'The artifacts: /artifacts/<page>'],
+	[FILLER_SECTION, 'The images of the Home grid: they have no page of their own']
+];
+// The key of contents.yaml that holds the links still to import.
+const NEW = 'new';
+
+// The settings (front matter fields) of a note: the ones of docs/templates/page.md and
+// docs/templates/home-image-filler.md, plus the two that the import adds.
+const ADDED_FIELDS = ['source', 'importedAt'];
+const PAGE_FIELDS = [
+	'type', 'title', 'subtitle', 'keywords', 'date', 'venue', 'location', 'authors', 'publication-type', 'doi',
+	'download-link', 'kind', 'members', 'advisory-board', 'excerpt', 'position', 'hidden-from-home', 'slug', 'tags'
+];
+const FILLER_FIELDS = ['type', 'title', 'accent', 'position', 'slug', 'tags'];
+const PEOPLE_FIELDS = {
+	members: ['name', 'role', 'affiliation', 'photo', 'external-url'],
+	'advisory-board': ['name', 'affiliation', 'external-url']
+};
+// Old names, with what to write instead.
+const RENAMED_FIELDS = { externalURL: 'external-url', advisory_board: 'advisory-board' };
+const REMOVED_FIELDS = { pinned: 'it is no longer used: set "position" to place the page in the Home grid' };
+const ADDED_COMMENT = ' ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────';
 const FILLER_ACCENTS = ['about', 'event', 'publication', 'artifact'];
 const SLUG_MAX_LENGTH = 60;
 const NOTE_TIMEOUT_MS = 15_000;
 const IMAGE_TIMEOUT_MS = 60_000;
-// With these options, yaml writes an unchanged front matter back byte for byte.
-const YAML_OPTIONS = { lineWidth: 0, indentSeq: false };
 
 const EXTENSION_BY_TYPE = {
 	'image/avif': '.avif',
@@ -66,9 +96,45 @@ const RESERVED_PATHS = new Set(['s', 'p', 'new', 'uploads', 'login', 'logout', '
 const FRONT_MATTER = /^---[ \t]*\r?\n(?:([\s\S]*?)\r?\n)?---[ \t]*(?:\r?\n|$)/;
 
 const USAGE = `Usage:
-  npm run syncFromHedgeDoc                     import the notes listed in src/content/hedgedoc-urls.txt
+  npm run syncFromHedgeDoc                     import the notes listed in src/content/contents.yaml
   npm run syncFromHedgeDoc -- --dry-run        show what would happen without writing anything
-  npm run syncFromHedgeDoc -- --force <path>   re-import a page; <path> is relative to src/content, e.g. events/<slug>`;
+  npm run syncFromHedgeDoc -- --force <path>   re-import a page; <path> is relative to src/content, e.g. events/<slug>
+  npm run syncFromHedgeDoc -- --refresh        re-import every page of the list
+  npm run syncFromHedgeDoc -- --prune          also delete the imported pages that are no longer in the list
+  npm run syncFromHedgeDoc -- --rebuild-list   write the list again from the pages of the repository (no network)`;
+
+// The comment at the top of contents.yaml, written again at every run.
+const LIST_HEADER = `# ══════════════════════════════════════════════════════════════════════
+#  CONTENTS OF THE WEBSITE
+#
+#  The pages of the website are written as notes on HedgeDoc
+#  (${HEDGEDOC}). This file lists the notes to fetch: the
+#  command below copies them into this repository, and the website is
+#  built from the copies.
+#
+#      npm run syncFromHedgeDoc
+#
+#  TO ADD A PAGE
+#  1. Create a note on HedgeDoc, then press "Publish".
+#  2. Copy the link of the page that opens. It looks like this:
+#     ${HEDGEDOC}/s/AbCdEfGhI
+#  3. Paste it in the "new" list below, on a line of its own, after "- ".
+#     Here is an example with two links:
+#
+#       new:
+#         - ${HEDGEDOC}/s/AbCdEfGhI
+#         - ${HEDGEDOC}/s/JkLmNoPqR
+#
+#  4. Run the command above.
+#
+#  The command files every new page under its section, with its title,
+#  the link of its note and the day it was fetched, and it empties the
+#  "new" list. The sections follow the structure of the website.
+#
+#  This file is written again at every run. Only the links matter: the
+#  titles and the dates are read from the pages, and comments you add
+#  here are not kept. To update or remove a page, see docs/CONTENT.md.
+# ══════════════════════════════════════════════════════════════════════`;
 
 class NetworkError extends Error {
 	constructor(reason, url) {
@@ -79,6 +145,8 @@ class NetworkError extends Error {
 }
 
 class HostUnreachableError extends Error {}
+
+class ListError extends Error {}
 
 const report = {
 	added: [],
@@ -91,7 +159,9 @@ const report = {
 	failedImages: [],
 	placeholders: [],
 	noteLinks: [],
-	unlisted: []
+	unlisted: [],
+	pruned: [],
+	list: null
 };
 
 process.exitCode = await main();
@@ -110,14 +180,37 @@ async function main() {
 	}
 
 	console.log(`HedgeDoc sync${options.dryRun ? ' (dry run: nothing is written)' : ''}\n`);
-	const pages = await indexPages();
-	const jobs = options.force.length ? forceJobs(options.force, pages) : await listJobs();
+	let pages = await indexPages();
+
+	if (options.rebuildList) {
+		// Offline: every imported page goes in the list; the links still to import are kept.
+		const links = await readList().catch(() => []);
+		resolveOffline(links);
+		await writeList(pages, links, { ...options, all: true });
+		printSummary(options.dryRun);
+		return report.errors.length ? 1 : 0;
+	}
+
+	let links;
+	try {
+		links = await readList();
+	} catch (error) {
+		if (!(error instanceof ListError)) throw error;
+		console.error(error.message);
+		return 1;
+	}
+
+	const jobs = options.force.length ? forceJobs(options.force, pages) : listJobs(links);
 	const importedAt = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+	// The pages that this run re-imports and has not reached yet: their settings are about to change.
+	const stale = new Set(
+		jobs.map((job) => job.force ?? (options.refresh && job.ref.id && pages.bySource.get(canonicalSource(job.ref.id)))).filter(Boolean)
+	);
 
 	for (const [index, job] of jobs.entries()) {
 		console.log(`[${index + 1}/${jobs.length}] ${job.label}`);
 		try {
-			await processJob(job, pages, { ...options, importedAt });
+			await processJob(job, pages, { ...options, importedAt, stale });
 		} catch (error) {
 			if (error instanceof HostUnreachableError) {
 				report.errors.push(error.message);
@@ -129,7 +222,14 @@ async function main() {
 			console.log(`      error: ${error.message}`);
 		}
 	}
-	if (!options.force.length) findUnlistedPages(pages, jobs);
+
+	resolveOffline(links);
+	if (!options.dryRun) pages = await indexPages();
+	if (!options.force.length) {
+		findUnlistedPages(pages, links);
+		if (options.prune) await prune(pages, links, options);
+	}
+	await writeList(pages, links, options);
 
 	printSummary(options.dryRun);
 	return report.errors.length || report.conflicts.length || report.failedImages.length ? 1 : 0;
@@ -139,10 +239,20 @@ function parseArgs(args) {
 	// `npm run syncFromHedgeDoc --dry-run` (without `--`) hands the flag to npm, which only sets
 	// npm_config_dry_run; the same goes for --force, whose path still reaches the script.
 	const npmForce = process.env.npm_config_force === 'true';
-	const options = { dryRun: process.env.npm_config_dry_run === 'true', force: [], help: false };
+	const options = {
+		dryRun: process.env.npm_config_dry_run === 'true',
+		force: [],
+		refresh: false,
+		prune: false,
+		rebuildList: false,
+		help: false
+	};
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
 		if (arg === '--dry-run') options.dryRun = true;
+		else if (arg === '--refresh') options.refresh = true;
+		else if (arg === '--prune') options.prune = true;
+		else if (arg === '--rebuild-list') options.rebuildList = true;
 		else if (arg === '--help' || arg === '-h') options.help = true;
 		else if (arg === '--force') {
 			if (!args[i + 1] || args[i + 1].startsWith('--')) throw new Error('--force needs a path.');
@@ -152,30 +262,112 @@ function parseArgs(args) {
 		else throw new Error(`Unknown argument: ${arg}`);
 	}
 	if (npmForce && !options.force.length) throw new Error('--force needs a path.');
+	if (options.force.length && (options.refresh || options.prune || options.rebuildList)) {
+		throw new Error('--force cannot be used with --refresh, --prune or --rebuild-list.');
+	}
+	if (options.rebuildList && (options.refresh || options.prune)) {
+		throw new Error('--rebuild-list cannot be used with --refresh or --prune.');
+	}
 	return options;
+}
+
+// ---------------------------------------------------------------------------
+// The list: src/content/contents.yaml
+
+/**
+ * The links of the list, in the order of the file: the plain links (under "new", or dropped
+ * anywhere else) and the `url` of the entries filed under the sections. Each link has `ref`, null
+ * when it is not the URL of a note, and `source`, the canonical URL of its note once it is known.
+ */
+async function readList() {
+	let text;
+	try {
+		text = await readFile(CONTENTS, 'utf8');
+	} catch (error) {
+		if (error.code !== 'ENOENT') throw error;
+		throw new ListError(
+			`${relative(CONTENTS)} does not exist. Run the script with --rebuild-list to write it from the pages of the repository.`
+		);
+	}
+	const doc = parseDocument(text);
+	const data = doc.errors.length ? null : (doc.toJS() ?? {});
+	if (!isRecord(data)) {
+		const [error] = doc.errors;
+		const where = error?.linePos?.[0]?.line ? `, line ${error.linePos[0].line}` : '';
+		const what = error ? error.message.split('\n')[0] : 'it must hold the "new" list and the sections';
+		throw new ListError(
+			`${relative(CONTENTS)} cannot be read${where}: ${what}\n` +
+				'Fix that line (often a missing "- " before a link, or a wrong indentation), or run the script ' +
+				'with --rebuild-list to write the file again from the pages of the repository.'
+		);
+	}
+
+	const links = [];
+	const seen = new Set();
+	for (const [section, value] of Object.entries(data)) {
+		for (const entry of value == null ? [] : [value].flat()) {
+			const url = typeof entry === 'string' ? entry.trim() : isRecord(entry) && typeof entry.url === 'string' ? entry.url.trim() : '';
+			if (!url) {
+				if (entry != null) report.warnings.push(`${relative(CONTENTS)}: an entry of "${section}" has no link, so it was left out.`);
+				continue;
+			}
+			if (seen.has(url)) continue;
+			seen.add(url);
+			const ref = parseNoteUrl(url);
+			if (!ref) report.errors.push(`${relative(CONTENTS)}: not the link of a note on ${HEDGEDOC}: ${url}`);
+			links.push({ url, ref, source: null });
+		}
+	}
+	return links;
+}
+
+/** The notes whose address holds their id are known without asking the server. */
+function resolveOffline(links) {
+	for (const link of links) link.source ??= link.ref?.id ? canonicalSource(link.ref.id) : null;
+}
+
+/**
+ * Writes the list again: the links that have no page yet under "new", and every listed page under
+ * its section, with its title, the URL of its note and the day it was fetched. `all` lists every
+ * imported page, also those that the list does not have (--rebuild-list).
+ */
+async function writeList(pages, links, { dryRun, all = false }) {
+	const listed = new Set(links.map((link) => link.source).filter(Boolean));
+	const sections = new Map(LIST_SECTIONS.map(([name]) => [name, []]));
+	for (const [dir, page] of pages.byDir) {
+		if (!page.source || !(all || listed.has(page.source))) continue;
+		const name = [...sections.keys()].find((section) => dir.startsWith(`${section}/`));
+		if (!name) continue;
+		const slug = dir.slice(name.length + 1);
+		sections.get(name).push({ ...page, slug, title: page.title ?? slug });
+	}
+	const byDate = (a, b) => (b.date ?? '').localeCompare(a.date ?? '') || a.slug.localeCompare(b.slug);
+	const byPosition = (a, b) => (Number(a.position) || 0) - (Number(b.position) || 0) || a.slug.localeCompare(b.slug);
+	const pending = links.filter((link) => !(link.source && pages.bySource.has(link.source))).map((link) => link.url);
+
+	const scalar = (value) => stringify(String(value), { lineWidth: 0 }).trimEnd();
+	const lines = [LIST_HEADER, '', `${NEW}:`, ...pending.map((url) => `  - ${url}`)];
+	let count = 0;
+	for (const [name, comment] of LIST_SECTIONS) {
+		lines.push('', `# ${comment}`, `${name}:`);
+		for (const entry of sections.get(name).sort(name === FILLER_SECTION ? byPosition : byDate)) {
+			if (count++ && lines.at(-1) !== `${name}:`) lines.push('');
+			lines.push(`  - page: ${scalar(entry.slug)}`, `    title: ${scalar(entry.title)}`, `    url: ${entry.source}`);
+			if (entry.importedAt) lines.push(`    synced: ${entry.importedAt.slice(0, 10)}`);
+		}
+	}
+	const text = `${lines.join('\n')}\n`;
+	const current = await readFile(CONTENTS, 'utf8').catch(() => null);
+	report.list = { changed: text !== current, pages: count, pending: pending.length };
+	if (!dryRun && text !== current) await writeFile(CONTENTS, text);
 }
 
 // ---------------------------------------------------------------------------
 // Jobs
 
-async function listJobs() {
-	let text;
-	try {
-		text = await readFile(URL_LIST, 'utf8');
-	} catch (error) {
-		if (error.code !== 'ENOENT') throw error;
-		report.errors.push(`${relative(URL_LIST)} does not exist.`);
-		return [];
-	}
-	const jobs = [];
-	for (const [index, raw] of text.split(/\r?\n/).entries()) {
-		const line = raw.trim();
-		if (!line || line.startsWith('#')) continue;
-		const ref = parseNoteUrl(line);
-		if (ref) jobs.push({ label: line, ref });
-		else report.errors.push(`${relative(URL_LIST)}, line ${index + 1}: not a note URL on ${HEDGEDOC}: ${line}`);
-	}
-	return jobs;
+/** One job per link of the list that is a note URL. The job fills in the `source` of its link. */
+function listJobs(links) {
+	return links.filter((link) => link.ref).map((link) => ({ label: link.url, ref: link.ref, link }));
 }
 
 function forceJobs(paths, pages) {
@@ -193,18 +385,36 @@ function forceJobs(paths, pages) {
 	return jobs;
 }
 
-/** Reports imported pages whose link is no longer in the list. They are kept, never deleted. */
-function findUnlistedPages(pages, jobs) {
+/** Reports imported pages whose link is no longer in the list. They are kept, unless --prune is given. */
+function findUnlistedPages(pages, links) {
 	const imported = [...pages.byDir].filter(([, page]) => page.source);
 	if (!imported.length) return;
-	if (jobs.some((job) => !job.source)) {
+	if (links.some((link) => !link.source)) {
 		report.warnings.push('Could not check for pages removed from the list: some links were not resolved.');
 		return;
 	}
-	const listed = new Set(jobs.map((job) => job.source));
+	const listed = new Set(links.map((link) => link.source));
 	for (const [dir, page] of imported) {
 		if (!listed.has(page.source)) report.unlisted.push({ dir, source: page.source });
 	}
+}
+
+/** --prune: deletes the imported pages that are no longer in the list. Hand-written pages are never touched. */
+async function prune(pages, links, { dryRun }) {
+	if (!report.unlisted.length) return;
+	// An empty or unresolved list must never empty the website.
+	if (!links.some((link) => link.source && pages.bySource.has(link.source))) {
+		report.warnings.push('--prune: the list holds no imported page, so nothing was deleted.');
+		return;
+	}
+	for (const page of report.unlisted) {
+		if (!dryRun) await removePage(page.dir);
+		pages.byDir.delete(page.dir);
+		pages.bySource.delete(page.source);
+		report.pruned.push(page);
+		console.log(`      ${dryRun ? 'would delete' : 'deleted'} ${pagePath(page.dir)}: no longer in the list`);
+	}
+	report.unlisted = [];
 }
 
 /** Normalizes a --force argument to a page folder relative to src/content, e.g. "events/<slug>". */
@@ -215,12 +425,15 @@ function pageDir(given) {
 	return dir;
 }
 
-async function processJob(job, pages, { dryRun, importedAt }) {
+async function processJob(job, pages, { dryRun, importedAt, refresh, stale }) {
 	const id = job.ref.id ?? (await resolveShortId(job.ref.shortid));
 	const source = canonicalSource(id);
-	job.source = source;
+	if (job.link) job.link.source = source;
 
 	const present = pages.bySource.get(source);
+	// --refresh re-imports the pages that are already there, as --force does for one page.
+	if (present && refresh) job.force = present;
+	if (present) stale.delete(present);
 	if (present && !job.force) {
 		report.skipped.push({ dir: present, source });
 		console.log(`      already present: ${pagePath(present)}`);
@@ -230,10 +443,10 @@ async function processJob(job, pages, { dryRun, importedAt }) {
 	const note = parseNote(await fetchNote(id));
 	const { section, warning } = sectionFor(note.doc.get('type'));
 	if (warning) report.warnings.push(`${source}: ${warning}`);
-	// Fillers have no title: their folder is named after the note id, which never changes.
 	const filler = section === FILLER_SECTION;
-	const dir = `${section}/${filler ? slugify(id) : slugFor(note.doc, id)}`;
-	if (filler) validateFiller(note, dir, pages);
+	const dir = `${section}/${slugFor(note, filler)}`;
+	if (filler) validateFiller(note, dir, pages, stale);
+	for (const problem of checkSettings(note.doc, filler)) report.warnings.push(`${pagePath(dir)}: ${problem}`);
 
 	const occupant = pages.byDir.get(dir);
 	if (occupant && occupant.source !== source) {
@@ -254,10 +467,8 @@ async function processJob(job, pages, { dryRun, importedAt }) {
 	const images = await localizeImages(note, dir, dryRun);
 	for (const url of findNoteLinks(note.body)) report.noteLinks.push({ dir, url });
 
-	note.doc.set('source', source);
-	note.doc.set('importedAt', importedAt);
 	const body = note.body.endsWith('\n') ? note.body : `${note.body}\n`;
-	const markdown = `---\n${note.doc.toString(YAML_OPTIONS)}---\n${body}`;
+	const markdown = `---\n${renderSettings(note, source, importedAt)}---\n${body}`;
 
 	const moved = job.force && job.force !== dir ? job.force : null;
 	if (!dryRun) {
@@ -356,12 +567,41 @@ async function requestHedgeDoc(url, init = {}) {
 // ---------------------------------------------------------------------------
 // Front matter, section and slug
 
+/**
+ * A note as its settings (the front matter: `front` is its text, `doc` what it says) and its body.
+ * `edits` collects the changes to make to the text of the settings: the image links to localise.
+ */
 function parseNote(markdown) {
 	const match = markdown.match(FRONT_MATTER);
-	const doc = parseDocument(match?.[1] ?? '');
-	if (doc.errors.length) throw new Error(`invalid front matter: ${doc.errors[0].message}`);
-	if (doc.contents !== null && !isMap(doc.contents)) throw new Error('the front matter is not a list of fields.');
-	return { doc, body: match ? markdown.slice(match[0].length) : markdown };
+	const front = match?.[1] ?? '';
+	const doc = parseDocument(front);
+	if (doc.errors.length) {
+		const [error] = doc.errors;
+		const line = error.linePos?.[0]?.line;
+		throw new Error(
+			`the settings of the note cannot be read${line ? ` (line ${line + 1} of the note)` : ''}: ${error.message.split('\n')[0]} ` +
+				'A text with a colon (:), such as a title, must be in "quotes".'
+		);
+	}
+	if (doc.contents !== null && !isMap(doc.contents)) throw new Error('the settings of the note are not a list of "name: value" lines.');
+	return { doc, front, edits: [], body: match ? markdown.slice(match[0].length) : markdown };
+}
+
+/**
+ * The settings of a note as they are written in the repository: the text of the note as it is,
+ * with its image links localised, followed by `source:` and `importedAt:` under a comment that
+ * says who wrote them. The text is never written again from the parsed values, so the comments,
+ * the empty fields and the layout of the note stay exactly as on HedgeDoc.
+ */
+function renderSettings(note, source, importedAt) {
+	let text = note.front;
+	for (const { start, end, value } of [...note.edits].sort((a, b) => b.start - a.start)) {
+		text = text.slice(0, start) + value + text.slice(end);
+	}
+	// The lines of an earlier import, when the settings were copied back from the repository.
+	const lines = text.split(/\r?\n/).filter((line) => !/^(source|importedAt):/.test(line) && line !== `#${ADDED_COMMENT}`);
+	text = lines.join('\n').replace(/\s+$/, '');
+	return `${text}${text ? '\n\n' : ''}#${ADDED_COMMENT}\nsource: ${source}\nimportedAt: ${importedAt}\n`;
 }
 
 function sectionFor(type) {
@@ -371,12 +611,101 @@ function sectionFor(type) {
 	return { section: SECTIONS[FALLBACK_TYPE], warning: `${problem}, filed under "${FALLBACK_TYPE}".` };
 }
 
-function slugFor(doc, id) {
-	for (const candidate of [doc.get('slug'), doc.get('title'), id]) {
-		const slug = candidate == null ? '' : slugify(String(candidate));
+/**
+ * The folder of a note inside its section: its `slug:`, or else its title. A page must have a
+ * title. A Home image without one is named after its image file or, when that name says nothing
+ * (the id of an upload), after the first words of its description: a folder is never named after an id.
+ */
+function slugFor(note, filler) {
+	for (const field of ['slug', 'title']) {
+		const value = note.doc.get(field);
+		const slug = value == null ? '' : slugify(String(value));
 		if (slug) return slug;
 	}
-	return id;
+	if (!filler) throw new Error('the note has no title: add "title:" to its settings, on HedgeDoc.');
+	const [image] = findImageUrls(note.body);
+	const fileName = image ? path.posix.basename(image.raw.split(/[?#]/)[0]).replace(/\.[a-z0-9]+$/i, '') : '';
+	const firstWords = (image?.alt ?? '').trim().split(/\s+/).slice(0, 4).join(' ');
+	for (const candidate of [fileName, firstWords]) {
+		const slug = slugify(candidate);
+		if (slug && !isIdLike(slug)) return slug;
+	}
+	const position = note.doc.get('position');
+	return Number.isInteger(position) ? `image-${position}` : 'image';
+}
+
+/** Whether a name reads as a generated id (a UUID, or a long run of mixed letters and digits) and not as words. */
+function isIdLike(slug) {
+	if (/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(slug)) return true;
+	return slug.split('-').some((part) => part.length >= 16 && /\d/.test(part) && /[a-z]/.test(part));
+}
+
+/**
+ * What is wrong with the settings of a note, in plain words, for the summary: names that the
+ * website does not know (often a typing mistake, or an old name), and values it cannot read.
+ * The note is imported all the same.
+ */
+function checkSettings(doc, filler) {
+	const problems = [];
+	const data = doc.toJS() ?? {};
+	const known = filler ? FILLER_FIELDS : PAGE_FIELDS;
+	for (const key of Object.keys(data)) {
+		if (known.includes(key) || ADDED_FIELDS.includes(key)) continue;
+		problems.push(`"${key}" is not a setting of the website${hintFor(key, known)}`);
+	}
+	if (filler) return problems;
+
+	const filled = (value) => value != null && value !== '';
+	const { date, position } = data;
+	if (filled(date) && !/^\d{4}(-\d{2}-\d{2})?$/.test(String(date).trim())) {
+		problems.push(`the date ${describe(date)} is not written as YEAR-MONTH-DAY (2026-05-08) or as a year (2026)`);
+	}
+	if (filled(position) && (!Number.isInteger(position) || position === 0)) {
+		problems.push(`"position" must be a whole number other than 0, such as 2 or -1 (found ${describe(position)}): the website cannot be built until it is fixed`);
+	}
+	const hidden = data['hidden-from-home'];
+	if (filled(hidden) && !['true', 'false'].includes(String(hidden).trim().toLowerCase())) {
+		problems.push(`"hidden-from-home" must be true, or be left empty (found ${describe(hidden)})`);
+	}
+	for (const [field, fields] of Object.entries(PEOPLE_FIELDS)) {
+		const people = data[field];
+		if (people == null) continue;
+		if (!Array.isArray(people)) {
+			problems.push(`"${field}" must be a list of people, each starting with "- name:"`);
+			continue;
+		}
+		const names = new Set(people.flatMap((person) => (isRecord(person) ? Object.keys(person) : [])));
+		for (const key of names) {
+			if (!fields.includes(key)) problems.push(`"${key}" is not a setting of a person in "${field}"${hintFor(key, fields)}`);
+		}
+	}
+	return problems;
+}
+
+/** What to write instead of a name that the website does not know. */
+function hintFor(key, known) {
+	if (RENAMED_FIELDS[key]) return `: it is now called "${RENAMED_FIELDS[key]}"`;
+	if (REMOVED_FIELDS[key]) return `: ${REMOVED_FIELDS[key]}`;
+	const plain = (name) => name.toLowerCase().replace(/[-_\s]/g, '');
+	const near = known.find((name) => plain(name) === plain(key)) ?? known.find((name) => editDistance(name, key.toLowerCase()) <= 2);
+	return near ? `: did you mean "${near}"?` : ', so it is ignored';
+}
+
+/** The number of single-letter changes between two words. */
+function editDistance(a, b) {
+	let row = Array.from({ length: b.length + 1 }, (_, i) => i);
+	for (let i = 1; i <= a.length; i++) {
+		const next = [i];
+		for (let j = 1; j <= b.length; j++) {
+			next[j] = Math.min(row[j] + 1, next[j - 1] + 1, row[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+		}
+		row = next;
+	}
+	return row[b.length];
+}
+
+function isRecord(value) {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function slugify(text) {
@@ -405,9 +734,10 @@ function stripMarkdown(text) {
 
 /**
  * Checks a Home image filler that would be written to `dir`, and throws an error that says
- * what to fix in the note. Its position must not be taken by another filler.
+ * what to fix in the note. Its position must not be taken by another filler; the fillers in
+ * `stale`, which the same run re-imports later, do not count, since their position may change.
  */
-function validateFiller(note, dir, pages) {
+function validateFiller(note, dir, pages, stale) {
 	const problems = [];
 	const accent = note.doc.get('accent');
 	if (!FILLER_ACCENTS.includes(accent)) {
@@ -418,7 +748,7 @@ function validateFiller(note, dir, pages) {
 		problems.push(`position must be a whole number from 1 up (found ${describe(position)})`);
 	} else {
 		for (const [other, page] of pages.byDir) {
-			if (other !== dir && other.startsWith(`${FILLER_SECTION}/`) && page.position === position) {
+			if (other !== dir && !stale.has(other) && other.startsWith(`${FILLER_SECTION}/`) && page.position === position) {
 				const owner = page.source ? ` (${page.source})` : '';
 				problems.push(`position ${position} is already taken by ${pagePath(other)}${owner}; pick a free position`);
 			}
@@ -457,12 +787,19 @@ function excerpt(text) {
 /**
  * Downloads the images of a note, from its body and from the image fields of its front matter,
  * and points their links to ./assets/<file>. Images from placeholder services keep their URL.
- * Rewrites note.body and note.doc in place and returns the files to write. In a dry run,
+ * Rewrites note.body in place, records the changes to the settings in note.edits and returns the files to write. In a dry run,
  * downloads nothing.
  */
 async function localizeImages(note, dir, dryRun) {
 	const spans = findImageUrls(note.body);
 	const fields = findImageFields(note.doc.contents);
+	const undescribed = spans.filter((span) => span.kind === 'inline' && !span.alt.trim()).length;
+	if (undescribed) {
+		report.warnings.push(
+			`${pagePath(dir)}: ${undescribed} image(s) without a description. Write it between the square brackets, ` +
+				'![description](link): it is read aloud to people who cannot see the image.'
+		);
+	}
 	const byUrl = new Map(); // resolved URL -> file name, or null if it failed or is a placeholder
 	const usedNames = new Set();
 	const files = [];
@@ -475,6 +812,12 @@ async function localizeImages(note, dir, dryRun) {
 			byUrl.set(url, null);
 			report.placeholders.push({ dir, url });
 			continue;
+		}
+		if (!isUpload(url)) {
+			report.warnings.push(
+				`${pagePath(dir)}: the image ${url} is not on HedgeDoc. It is copied all the same, but upload it to the note ` +
+					'("Upload Image") and use that link, so that the page does not depend on another website.'
+			);
 		}
 		if (dryRun) {
 			const file = fileNameFor(url, null, usedNames);
@@ -500,10 +843,10 @@ async function localizeImages(note, dir, dryRun) {
 		const file = byUrl.get(resolveImageUrl(span.raw));
 		if (file) note.body = note.body.slice(0, span.start) + `./assets/${file}` + note.body.slice(span.end);
 	}
-	// Setting the value of a scalar keeps its comments and the rest of the front matter as they are.
+	// The fields are changed in the text of the settings, at the place of their value.
 	for (const field of fields) {
 		const file = byUrl.get(resolveImageUrl(field.value));
-		if (file) field.value = `./assets/${file}`;
+		if (file && field.range) note.edits.push({ start: field.range[0], end: field.range[1], value: `./assets/${file}` });
 	}
 	return files;
 }
@@ -517,6 +860,12 @@ function findImageFields(node) {
 		if (isImage && isScalar(value) && typeof value.value === 'string' && value.value.trim()) return [value];
 		return findImageFields(value);
 	});
+}
+
+/** Whether an image was uploaded to HedgeDoc, as the notes should do with every image. */
+function isUpload(url) {
+	const { hostname, pathname } = new URL(url);
+	return hostname === HEDGEDOC_HOST && pathname.startsWith('/uploads/');
 }
 
 function isPlaceholder(url) {
@@ -768,8 +1117,9 @@ function findNoteLinks(body) {
 // Files
 
 /**
- * Maps every page folder (relative to src/content) to its source: (null for hand-written pages)
- * and its position: (used by Home image fillers).
+ * Maps every page folder (relative to src/content) to what its settings say: its source: (null for
+ * hand-written pages), its position: (used by Home image fillers) and, for the list, its title,
+ * date and importedAt.
  */
 async function indexPages() {
 	const byDir = new Map();
@@ -793,11 +1143,17 @@ async function readPage(file) {
 		const match = (await readFile(file, 'utf8')).match(FRONT_MATTER);
 		if (!match) return { source: null };
 		const doc = parseDocument(match[1] ?? '');
-		const position = doc.get('position');
+		const text = (field) => (doc.get(field) == null ? undefined : String(doc.get(field)).trim() || undefined);
+		const page = {
+			position: doc.get('position'),
+			title: text('title') && stripMarkdown(text('title')),
+			date: text('date'),
+			importedAt: text('importedAt')
+		};
 		const source = doc.get('source');
-		if (typeof source !== 'string' || !source.trim()) return { source: null, position };
+		if (typeof source !== 'string' || !source.trim()) return { ...page, source: null };
 		const ref = parseNoteUrl(source.trim());
-		return { source: ref?.id ? canonicalSource(ref.id) : source.trim(), position };
+		return { ...page, source: ref?.id ? canonicalSource(ref.id) : source.trim() };
 	} catch {
 		return { source: null };
 	}
@@ -876,8 +1232,16 @@ function printSummary(dryRun) {
 	}
 	section('Links to other HedgeDoc notes, not rewritten', report.noteLinks, (link) => `${pagePath(link.dir)}: ${link.url}`);
 	if (report.unlisted.length) {
-		section(`Pages no longer in ${relative(URL_LIST)}, kept`, report.unlisted, (p) =>
+		section(`Pages no longer in ${relative(CONTENTS)}, kept (run with --prune to delete them)`, report.unlisted, (p) =>
 			`${pagePath(p.dir)}  ← ${p.source}`
 		);
+	}
+	if (report.pruned.length) {
+		section(`Pages no longer in ${relative(CONTENTS)}, ${would}deleted`, report.pruned, (p) => `${pagePath(p.dir)}  ← ${p.source}`);
+	}
+	if (report.list) {
+		const { changed, pages, pending } = report.list;
+		const state = !changed ? 'is up to date' : dryRun ? 'would be written again' : 'was written again';
+		console.log(`\n${relative(CONTENTS)} ${state}: ${pages} page(s) filed, ${pending} link(s) under "${NEW}".`);
 	}
 }

@@ -65,15 +65,15 @@ export interface Member {
 	affiliation?: string;
 	/** The image URL: a localised ./assets/ file, resolved to its built URL, or a remote placeholder. */
 	photo?: string;
-	/** The member's page elsewhere, linked from the name. */
+	/** The member's page elsewhere (the `external-url` field), linked from the name. */
 	externalURL?: string;
 }
 
-/** A person in the advisory board list of the About page: an entry of `advisory_board`. */
+/** A person in the advisory board list of the About page: an entry of `advisory-board`. */
 export interface BoardMember {
 	name: string;
 	affiliation?: string;
-	/** The member's page elsewhere, linked from the icon after the name. */
+	/** The member's page elsewhere (the `external-url` field), linked from the icon after the name. */
 	externalURL?: string;
 }
 

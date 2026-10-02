@@ -1,41 +1,97 @@
 ---
-# This area is called "Frontmatter" and it is used to specify the post metadata (title, date, type, etc.)
+# ══════════════════════════════════════════════════════════════════════
+#  PAGE SETTINGS
+#  How to write a page:
+#  https://github.com/BitPhilology/BitPhilology.github.io/blob/main/docs/CONTENT.md
+#
+#  Lines that start with "#" are notes for you: the website ignores them.
+#  Every type of page has the same settings. Some of them only apply to
+#  some types: on the other types they are ignored, so you can leave them
+#  empty or delete them.
+# ══════════════════════════════════════════════════════════════════════
 
-# type can be either: about (fallback option), artifact, publication, event, team
+# ── TYPE OF PAGE ──────────────────────────────────────────────────────
+# One of: about, team, event, publication, artifact.
 type: event
-tags: website/event # for HedgeDoc
 
-# the title is displayed in the home post card and int he post single page. Events can have a subtitle
+# ── WHAT THE PAGE IS ABOUT ────────────────────────────────────────────
+# The title of the page, also shown on its card on the Home page.
 title: Digital Forensics in the Humanities
+# A line under the title. Not used on publications.
 subtitle: A workshop that brings together forensic methodologies and archival work
-
-# Publication or happening date. Please use YYYY or YYYY-MM-DD format.
-date: 2026-05-08
-
-# the location of an event, or the publication venue of a contribution
-venue: "University of Bern"
-
-# keywords are visibile in home grid only for artifacts.
+# The topics of the page, one per line, each after "- ". They are shown as #keyword labels.
 keywords:
 - digital forensics
 - vintage computing
 - digital preservation
 
-pinned: false
+# ── WHEN AND WHERE ────────────────────────────────────────────────────
+# The day of the event, or when the page or the publication came out.
+# Write YEAR-MONTH-DAY (2026-05-08) or only the year (2026).
+date: 2026-05-08
+# Events and publications only: the institution, the conference or the journal.
+venue: University of Bern
+# Events and publications only: the room or the city, when it adds something to the venue.
+location:
+
+# ── PUBLICATIONS AND ARTIFACTS ONLY ───────────────────────────────────
+# Who made it, for example: E. Spadini, E. Barchielli.
+authors:
+# Publications only: what it is, for example: Poster, Oral Communication, Article.
+publication-type:
+# Publications only: the DOI (10.5281/zenodo.1234567) or its link.
+doi:
+# Publications only: the link to the file to download.
+download-link:
+# Artifacts only: what kind of object it is, for example: Tool, Dataset.
+kind:
+
+# ── LISTS OF PEOPLE ───────────────────────────────────────────────────
+# Team page only: the people of the team, shown where the text has {{team}}.
+# A photo is uploaded to HedgeDoc like any image (see the end of these settings): here goes only its link.
+# To add a person, copy these lines without the "#":
+# - name: Jane Doe
+#   role: PhD Student
+#   affiliation: Universität Bern
+#   photo: https://pad.dsl.unibe.ch/uploads/1a2b3c4d.jpg
+#   external-url: https://link-to-her-web-page
+members:
+# About page only: the advisory board, shown where the text has {{advisory-board}}.
+# To add a person, copy these lines without the "#":
+# - name: Jane Doe
+#   affiliation: Universität Bern
+#   external-url: https://link-to-her-web-page
+advisory-board:
+
+# ── HOME PAGE ─────────────────────────────────────────────────────────
+# The text on the card of the page (About, Team and Artifact only).
+# Empty: the card shows the first paragraph of the page.
+excerpt:
+# Where the card sits in the Home grid: 1 is the first tile, 2 the second…; -1 is the last one.
+# Empty: the cards follow their date, newest first.
+position:
+# Write "true" to not display the content in the home page (e.g., as done for the "credits" page).
+hidden-from-home:
+
+# ── TECHNICAL SETTINGS ────────────────────────────────────────────────
+# Leave it empty: the address of the page is computed from its title when the page is imported.
+slug:
+# Used by HedgeDoc to group the notes: leave it as it is.
+tags: website/event
+
+# ── HOW TO ADD AN IMAGE TO THE TEXT ───────────────────────────────────
+# Always upload the image to HedgeDoc: never link to an image that is on another website.
+# 1. Put the cursor on an empty line of the text, below these settings.
+# 2. Press the "Upload Image" button in the toolbar of HedgeDoc. HedgeDoc writes a line like this:
+#      ![](https://pad.dsl.unibe.ch/uploads/1a2b3c4d.png)
+# 3. Complete that line with a description and a caption:
+#      ![A hand-drawn map of the archive](https://pad.dsl.unibe.ch/uploads/1a2b3c4d.png "The archive in 1998")
+#    Between [ ]: the description of the image, read aloud to people who cannot see it. Always write it.
+#    Between " ", after a space: the caption, shown beside the image. You can leave it out.
+
+# ── ADDED BY THE IMPORT: DO NOT EDIT ──────────────────────────────────
 source: https://pad.dsl.unibe.ch/ghrdFbhVQy-herciaypa8Q
 importedAt: 2026-10-01T18:49:01Z
-
-# ⭐️ USEFUL TO KNOW ⭐️
-
-# The first paragraph is by default interpreted as a "lead paragraph" and is rendered slighlty bigger than the following. To prevent the default behaviour use "[no-lead]" at the beginning of the first line.
-
-# The sintax to insert images is the following:
-# ![alt text (to improve accessibility and screen reader functionalitis)](url-to-the-image.png "Caption")
-# Qui l'alt (prima stringa) resta per l'accessibilità/screen reader, il title (tra virgolette) diventa il testo visibile della caption. È il pattern più pulito perché separa le due responsabilità: alt = descrizione per chi non vede l'immagine, title = didascalia editoriale che può essere più lunga o formale.
-
-# To insert side notes use this sintax:
-# - in the text write [^note-unique-label] to insert the reference to the note
-# - in any place of the document write the text of the note as an independent paragraph like this -> [^note-unique-label]: Text of the note...
 ---
 
 ![](./assets/9a55f87e-fbaf-4dd8-9166-cc740653b74f.jpeg)

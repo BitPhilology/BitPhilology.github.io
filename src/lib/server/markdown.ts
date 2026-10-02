@@ -156,7 +156,8 @@ function markersIn(node: Nodes): string[] {
 
 /**
  * The data of every embed whose field is in the front matter, validated. A field without its
- * marker is not shown (a warning); a marker without its field is an error.
+ * marker is not shown (a warning); a marker without its field is an error. An empty field, as in
+ * the page template, counts as missing.
  */
 function parseEmbedData(
 	data: Record<string, unknown>,
@@ -167,7 +168,7 @@ function parseEmbedData(
 	const used = plan.flatMap((item) => (item.kind === 'embed' ? [item.name] : []));
 	const parsed = new Map<EmbedName, unknown>();
 	for (const [name, { field, parse }] of Object.entries(EMBEDS) as [EmbedName, (typeof EMBEDS)[EmbedName]][]) {
-		if (data[field] === undefined) {
+		if (data[field] == null) {
 			if (used.includes(name)) throw new Error(`${file}: {{${name}}} needs the "${field}" list in the front matter.`);
 			continue;
 		}

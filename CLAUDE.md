@@ -113,40 +113,65 @@ The icons come from [pixelarticons](https://pixelarticons.com) (`pixelarticons` 
 
 ## Content
 
+The guide for the people who write the pages is [docs/CONTENT.md](docs/CONTENT.md); the templates of the notes are in [docs/templates/](docs/templates/). Keep both in step with the rules below.
+
 ### Structure
 
 The pages are Markdown files grouped by section, so that the folder tree mirrors the URLs:
 
 ```
 src/content/
-  hedgedoc-urls.txt           the HedgeDoc notes to import, one URL per line
+  contents.yaml               the HedgeDoc notes of the website, filed by section
   <section>/<slug>/index.md   a page
   <section>/<slug>/assets/    its images, linked as ./assets/<file>
-  home-image-fillers/<note id>/index.md   a Home image filler (see below)
+  home-image-fillers/<slug>/index.md   a Home image filler (see below)
 ```
 
-- Sections: `events`, `publications`, `artifacts`, `about`, `about/team` for the team page (a single note, `type: team`, which lists the members in its front matter), and `home-image-fillers` for the image tiles of the Home grid.
+- Sections: `events`, `publications`, `artifacts`, `about` (which also holds the team page, a note with `type: team`, normally `about/team`, that lists the members in its front matter), and `home-image-fillers` for the image tiles of the Home grid.
 - The files in `src/content` are data: the import script never touches `src/routes` or any other code.
-- A page with `source:` in its front matter was imported from HedgeDoc. To change it, edit the note on HedgeDoc and re-import it with `--force`: local edits to an imported page are lost on re-import.
-- A `.md` file without `source:` is hand-written. Never touch it, and neither does the script.
-- Imported pages keep the note as it is, YAML comments included, even when they are not in English.
+- A page with `source:` in its front matter was imported from HedgeDoc. To change it, edit the note on HedgeDoc and re-import it with `--force` (or `--refresh`): local edits to an imported page are lost on re-import.
+- A `.md` file without `source:` is hand-written. Never touch it, and neither does the script. It is not listed in `contents.yaml`.
+- An imported page is the note as it is, byte for byte, comments included: only its image links are rewritten, and `source:` and `importedAt:` are added at the end of its front matter.
 
 ### Notes on HedgeDoc
 
 The notes live on a HedgeDoc 1.x server, https://pad.dsl.unibe.ch, which may only be reachable from the University of Bern network. Every note has two URL forms:
 
 - edit: `https://pad.dsl.unibe.ch/<id>` (raw Markdown on `/<id>/download`). `https://pad.dsl.unibe.ch/<id>` is the canonical source of a page.
-- published: `https://pad.dsl.unibe.ch/s/<shortid>` (raw Markdown on `/s/<shortid>/download`); `/s/<shortid>/edit` redirects to `/<id>`.
+- published: `https://pad.dsl.unibe.ch/s/<shortid>` (raw Markdown on `/s/<shortid>/download`); `/s/<shortid>/edit` redirects to `/<id>`. This is the link that editors paste in the list, after pressing "Publish".
 
-Each note has a YAML front matter with `type`, `title`, `date` (`YYYY-MM-DD`), `venue`, `keywords`, `tags`, and optionally `subtitle`, `publication-type`, `slug`, `position` and `hidden-from-home`. The page title is the `title` field, not a `#` heading in the body.
+Every page uses the same front matter, the one of `docs/templates/page.md`: `type`, `title`, `subtitle`, `keywords`, `date` (`YYYY-MM-DD` or `YYYY`), `venue`, `location`, `authors`, `publication-type`, `doi`, `download-link`, `kind`, `members`, `advisory-board`, `excerpt`, `position`, `hidden-from-home`, `slug`, `tags`. A field that does not apply to the type of the page is ignored; an empty field counts as missing. The page title is the `title` field, not a `#` heading in the body.
 
-**To choose the URL of a page, add `slug:` to the note's metadata on HedgeDoc.** Otherwise the slug comes from the title.
+- Names are lowercase with hyphens, and only these names are read: there are no aliases for older spellings (`externalURL`, `advisory_board`, `pinned`). To add a field, add it to the template, to `PAGE_FIELDS` in the script, to the loader (`src/lib/content/`) and to the table of docs/CONTENT.md.
+- **The URL of a page** is its section and its slug. The slug is computed at import from `title`; `slug:` is left empty in the template, and only overrides the title when it is filled in.
+- **To place a page in the Home grid, set `position:`.** `1` is the first tile, `2` the second…; `-1` is the last tile, and several pages with `-1` all go to the bottom. Without a position (or with an empty one) a page follows its date, newest first. The full rule is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-home-tile-rule).
+- **To keep a page out of the Home grid, set `hidden-from-home: true`.** Without it every page has a card on Home. A hidden page keeps its URL and its place in the dock's list of its category.
+- The credits page is an About note titled "Credits" (so `about/credits`, URL `/about/credits`) with `hidden-from-home: true`. The "Credits" link of the footer's colophon appears only when that page exists.
 
-**To place a page in the Home grid, add `position:`.** `1` is the first tile, `2` the second…; `-1` is the last tile, and several pages with `-1` all go to the bottom. Without a position (or with an empty one) a page follows its date, newest first. The full rule is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-home-tile-rule). The old `pinned` field is no longer read.
+### The list: `src/content/contents.yaml`
 
-**To keep a page out of the Home grid, add `hidden-from-home: true`.** Without the field every page has a card on Home. A hidden page keeps its URL and its place in the dock's list of its category.
+The list of the notes of the website. The import script reads the links from it and writes the whole file again at every run:
 
-The credits page is an About note with `slug: credits` and `hidden-from-home: true`, imported to `src/content/about/credits/index.md` (URL `/about/credits`). The "Credits" link of the footer's colophon appears only when that page exists.
+```yaml
+new:
+  - https://pad.dsl.unibe.ch/s/AbCdEfGhI   # a link still to import
+
+about:
+  - page: about-bit-philology              # the slug: the folder and the last part of the URL
+    title: About Bit Philology
+    url: https://pad.dsl.unibe.ch/<id>     # the canonical URL of the note
+    synced: 2026-09-30                     # the day it was fetched
+events:
+publications:
+artifacts:
+home-image-fillers:
+```
+
+- The only input is the links: a plain link under `new` (or dropped anywhere else) or the `url` of an entry. `page`, `title` and `synced` are read from the pages at every run, so editing them has no effect. The comment at the top of the file belongs to the script (`LIST_HEADER`); other comments are not kept.
+- The sections are in the order of the website; pages are sorted newest first, fillers by position. A label is always a slug or a title, never a note id.
+- A link that could not be imported (an error, a conflict, no network) stays under `new`.
+- A page whose link is taken off the list is kept and reported; `--prune` deletes it. Hand-written pages are never listed and never deleted.
+- If the file cannot be parsed, the script stops before touching anything and names the line; `--rebuild-list` writes the file again from the imported pages.
 
 ### Importing: `scripts/syncFromHedgeDoc.js`
 
@@ -156,47 +181,50 @@ Run it by hand; there is no GitHub Action. Pass options after `--`:
 npm run syncFromHedgeDoc                                 # import the notes that are missing
 npm run syncFromHedgeDoc -- --dry-run                    # show what would happen, write nothing
 npm run syncFromHedgeDoc -- --force events/<slug>        # re-import one page (path relative to src/content)
+npm run syncFromHedgeDoc -- --refresh                    # re-import every page of the list
+npm run syncFromHedgeDoc -- --prune                      # also delete the imported pages taken off the list
+npm run syncFromHedgeDoc -- --rebuild-list               # write contents.yaml again from the pages, offline
 ```
 
-For each URL in `src/content/hedgedoc-urls.txt` (empty lines and lines starting with `#` are ignored; both URL forms work, with or without `?edit`, `?view`, `?both` or `#fragment`), the script:
+For each link of `contents.yaml` (both URL forms work, with or without `?edit`, `?view`, `?both` or `#fragment`), the script:
 
-1. Finds the canonical note id; a published URL is followed through `/s/<shortid>/edit`.
-2. Skips the note, without touching anything, if any `index.md` already has that `source:`.
+1. Finds the canonical note id; a published URL is followed through `/s/<shortid>/edit`. A canonical URL needs no request.
+2. Skips the note, without touching anything, if any `index.md` already has that `source:` (unless `--refresh`).
 3. Downloads the Markdown from `/<id>/download`.
-4. Picks the section from `type` (lowercase, no spaces): `event` → `events`, `publication` → `publications`, `artifact` → `artifacts`, `about` → `about`, `team` → `about/team`, `home-image-filler` → `home-image-fillers`. A missing or unknown type falls back to `about`, with a warning.
-5. Computes the slug from `slug:` or else from the title: Markdown and accents removed, lowercase, only `a-z`, `0-9` and hyphens, cut at a hyphen around 60 characters. Without a title, it uses the note id. Home image fillers always use the note id, and are validated first (see below).
-6. Never overwrites: if `<section>/<slug>/index.md` exists with another source or without `source:`, it reports a conflict and moves on. A folder without `index.md` (such as `about/team`) is not a conflict.
-7. Downloads every linked image, from HedgeDoc or elsewhere, into `assets/` and rewrites the links as `./assets/<file>`, keeping alt text and title. It handles `![alt](url "title")`, the HedgeDoc size syntax `url =WxH`, reference definitions `[id]: url` and `<img src="…">`, and ignores code. It also downloads the images of the front matter fields named `photo`, at any depth (e.g. the `photo` of each entry in the team's `members` list), and sets the field to `./assets/<file>`; to download other fields, add their name to `IMAGE_FIELDS` in the script. Images from placeholder services (`picsum.photos`, `placehold.co`, `placeholder.com`, `dummyimage.com`, `loremflickr.com`, `placekitten.com`, `fakeimg.pl`, and their subdomains) are not downloaded: their URL stays as it is, and they are listed in the summary. If an image fails, the original link stays and it is reported.
-8. Adds `source:` (canonical URL) and `importedAt:` (ISO timestamp) to the front matter, keeping every other field, the comments and the formatting (it uses the `yaml` library, never regular expressions, for the front matter).
-9. Writes `index.md`. The body stays identical apart from the image links (and a final newline).
+4. Picks the section from `type` (lowercase, no spaces): `event` → `events`, `publication` → `publications`, `artifact` → `artifacts`, `about` and `team` → `about`, `home-image-filler` → `home-image-fillers`. A missing or unknown type falls back to `about`, with a warning.
+5. Computes the slug from `slug:` or else from the title: Markdown and accents removed, lowercase, only `a-z`, `0-9` and hyphens, cut at a hyphen around 60 characters. A page without a title is refused. A folder is never named after a note id (see Home image fillers for the fallback).
+6. Checks the front matter and reports, as warnings in plain words, the names it does not know (with the right name when it is an old or a mistyped one), and the dates, positions and `hidden-from-home` values that the site cannot read. The note is imported all the same.
+7. Never overwrites: if `<section>/<slug>/index.md` exists with another source or without `source:`, it reports a conflict and moves on.
+8. Downloads every linked image, from HedgeDoc or elsewhere, into `assets/` and rewrites the links as `./assets/<file>`, keeping alt text and title. It handles `![alt](url "title")`, the HedgeDoc size syntax `url =WxH`, reference definitions `[id]: url` and `<img src="…">`, and ignores code. It also downloads the images of the front matter fields named `photo`, at any depth (e.g. the `photo` of each entry in the team's `members` list), and sets the field to `./assets/<file>`; to download other fields, add their name to `IMAGE_FIELDS` in the script. Images from placeholder services (`picsum.photos`, `placehold.co`, `placeholder.com`, `dummyimage.com`, `loremflickr.com`, `placekitten.com`, `fakeimg.pl`, and their subdomains) are not downloaded: their URL stays as it is, and they are listed in the summary. If an image fails, the original link stays and it is reported. Editors are told to upload every image to HedgeDoc ("Upload Image") and to describe it: an image hosted elsewhere, and an image without alt text, are imported but reported as warnings.
+9. Writes `index.md`: the front matter of the note as text, untouched apart from the `photo` links, followed by `source:` (canonical URL) and `importedAt:` (ISO timestamp) under a "do not edit" comment; then the body, identical apart from the image links (and a final newline). The `yaml` library only reads the front matter: the text is never written again from the parsed values, which would move the comments of empty fields.
+10. Writes `contents.yaml` again.
 
-`--force <path>` re-imports that page and replaces its `index.md` and `assets/`. If the note's type or slug changed, the page moves to the new place: the old `index.md` and `assets/` are deleted, and the old folder too if nothing else is left in it.
+`--force <path>` and `--refresh` re-import a page and replace its `index.md` and `assets/`. If the note's type or slug changed, the page moves to the new place: the old `index.md` and `assets/` are deleted, and the old folder too if nothing else is left in it.
 
-Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the images downloaded or failed, the placeholder images kept as links, the links to other HedgeDoc notes found in the text (not rewritten yet) and the imported pages whose link is no longer in the list. The exit code is 1 if there were errors, conflicts or failed images.
-
-The script never deletes a page because its link left the list: it lists it under "Pages no longer in src/content/hedgedoc-urls.txt, kept" (this check is skipped with `--force`). Delete the folder by hand if the page should go.
+Requests time out (15 s for notes, 60 s for images). An error on one note does not stop the others, but if the server is unreachable the script stops and says so. At the end it prints the pages added, re-imported, skipped and in conflict, the errors, the warnings, the images downloaded or failed, the placeholder images kept as links, the links to other HedgeDoc notes found in the text (not rewritten yet), the imported pages that are no longer in the list (kept, or deleted with `--prune`) and whether the list was written again. The exit code is 1 if there were errors, conflicts or failed images.
 
 ### Home image fillers
 
-A Home image filler is a note that only holds an image for a tile of the Home grid. Add its link (either URL form) to `src/content/hedgedoc-urls.txt` like any other note. The note looks like this:
+A Home image filler is a note that only holds an image for a tile of the Home grid. Its link goes in `contents.yaml` like any other note. The note is `docs/templates/home-image-filler.md`:
 
 ```markdown
 ---
 type: home-image-filler
+title: Floppy Disk       # a short name: it names the folder, it is not shown
 accent: about            # about | event | publication | artifact
-tags: website/page       # HedgeDoc tag, kept as it is
 position: 2              # position in the Home grid
+slug:                    # left empty
+tags: website/home-image-filler
 ---
 
 ![alt text for screen readers](https://pad.dsl.unibe.ch/uploads/<id>.webp
  "Optional caption (ignored on Home)")
 ```
 
-- It is written to `src/content/home-image-fillers/<note id>/index.md`, with the image in `assets/`. The folder is the canonical note id in lowercase (`slug:` and titles are ignored), so it never changes.
-- The front matter is kept as it is, comments included; `source:` and `importedAt:` are added, as for every page. The body is the image, with its link rewritten to `./assets/<file>` and its alt text and caption kept.
+- It is written to `src/content/home-image-fillers/<slug>/index.md`, with the image in `assets/`. The slug comes from `slug:` or the `title`; without them, from the name of the image file or, when that is an upload id, from the first words of the alt text; as a last resort `image-<position>`.
 - The script refuses a filler, reports it as an error and moves on, when:
   - `accent` is not one of `about`, `event`, `publication`, `artifact`;
-  - `position` is not a whole number from 1 up (a quoted `"3"` is not a number), or another filler already has it. Fillers already imported keep their position; within one run, the first filler in the list wins;
+  - `position` is not a whole number from 1 up (a quoted `"3"` is not a number), or another filler already has it. Fillers already imported keep their position; within one run, the first filler in the list wins; fillers that the same run re-imports later (`--refresh`) do not count, since their position may change;
   - the body does not hold exactly one image written as `![alt text](url "caption")`, holds anything else (text, headings, a second image), or the alt text is empty.
 - `position` is the 1-based index in the Home grid. Any position is allowed, 1 included: position 1 is the first tile and holds the logo filler.
 - The Home loader reads the fillers from `src/content/home-image-fillers/` and validates them again at build time: an invalid filler or two fillers with the same position fail the build (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-home-tile-rule)).

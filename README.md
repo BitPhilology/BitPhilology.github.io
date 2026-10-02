@@ -1,42 +1,111 @@
-# sv
+# Bit Philology — website
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+The website of **Bit Philology**, a Swiss National Science Foundation Starting Grant project (2025–2030) on the textual scholarship of born-digital literary archives. The project is conducted at the Digital Humanities Center, part of the Walter Benjamin Kolleg at the University of Bern.
 
-## Creating a project
+- Live site: https://bitphilology.github.io/
+- Future address: http://bitphilology.dh.unibe.ch/ (see [Custom domain](#custom-domain))
 
-If you're seeing this, you've probably already done this step. Congrats!
+The site is static: the pages are written as notes on HedgeDoc, copied into this repository as Markdown, and built into HTML with SvelteKit.
+
+## Documentation
+
+| File | For | What it covers |
+| --- | --- | --- |
+| [docs/CONTENT.md](docs/CONTENT.md) | people who write the pages | Adding, updating and removing pages; the settings of a note; images, notes, the Home page |
+| [docs/templates/](docs/templates/) | people who write the pages | The templates of the notes: a page, and an image of the Home grid |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | developers | How the code turns the content into pages: loader, components, theming, text styles |
+| [CLAUDE.md](CLAUDE.md) | developers and the AI coding assistant | The rules of the repository: stack, CSS layers, design tokens, content and import rules |
+
+## Stack
+
+- [SvelteKit 2](https://svelte.dev/docs/kit) with Svelte 5 (runes) and TypeScript, built by Vite
+- `@sveltejs/adapter-static`: every route is prerendered into `build/`
+- Tailwind CSS v4 through `@tailwindcss/vite`
+- Fonts self-hosted with Fontsource (Mona Sans, Bitcount Prop Single, JetBrains Mono); icons from `pixelarticons`
+- Markdown rendered at build time with unified (remark and rehype)
+- Design source: the Figma file linked in [CLAUDE.md](CLAUDE.md)
+
+## Working on the site
+
+You need [Node.js](https://nodejs.org) 24 (LTS) and npm.
 
 ```sh
-# create a new project
-npx sv create my-app
+git clone https://github.com/BitPhilology/BitPhilology.github.io.git
+cd BitPhilology.github.io
+npm install
+npm run dev          # start the development server
+npm run dev -- --open   # …and open the site in a new browser tab
 ```
 
-To recreate this project with the same configuration:
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Starts the development server, with live reload |
+| `npm run check` | Checks the types and the Svelte components |
+| `npm run build` | Builds the production site into `build/` |
+| `npm run preview` | Serves the built site locally, to check it before publishing |
+| `npm run syncFromHedgeDoc` | Copies the pages from HedgeDoc into `src/content` (see [Content](#content)) |
+
+Before pushing, run `npm run check` and `npm run build`: the build fails, naming the file, when a page has a problem (a missing title, a wrong position, a misplaced marker).
+
+### Where things are
+
+```
+src/content/      the pages, as Markdown, and contents.yaml, the list of the HedgeDoc notes
+src/lib/          the code: content loader, components, templates, styles
+src/routes/       the routes: Home, and one page per post
+scripts/          syncFromHedgeDoc.js, the import script
+docs/             the documentation and the templates of the notes
+static/           files copied as they are into the site (robots.txt)
+.github/workflows/deploy.yml   the deployment to GitHub Pages
+```
+
+## Content
+
+The pages are not written in this repository. Each page is a note on the HedgeDoc server of the University of Bern (https://pad.dsl.unibe.ch); [`src/content/contents.yaml`](src/content/contents.yaml) lists the notes, and one command copies them here, with their images:
 
 ```sh
-# recreate this project
+npm run syncFromHedgeDoc
+```
+
+To add a page, paste the link of its published note under `new` in `contents.yaml` and run the command; the changes it makes to `src/content` are then committed and pushed like any other change. The whole procedure, with the settings of a note and the options of the command, is in [docs/CONTENT.md](docs/CONTENT.md).
+
+HedgeDoc may only be reachable from the network of the University of Bern (or its VPN). The import is always run by hand: the deployment does not contact HedgeDoc, it publishes what is in the repository.
+
+## Deployment
+
+The site is published on **GitHub Pages** by a GitHub Actions workflow, [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+
+1. A push to `main` starts the workflow. It can also be started by hand: on GitHub, **Actions → Deploy to GitHub Pages → Run workflow**.
+2. The `build` job checks out the repository, installs the dependencies with `npm ci` on Node 24, runs `npm run build` and uploads the `build/` folder.
+3. The `deploy` job publishes that folder on GitHub Pages. The whole run takes about a minute; its result is in the **Actions** tab.
+
+So publishing a change means: commit, push to `main`, wait for the green tick.
+
+Two things to know:
+
+- **Repository setting.** Under **Settings → Pages → Build and deployment**, the source must be **GitHub Actions**. With "Deploy from a branch", GitHub also publishes the files of the repository themselves (the README, rendered by Jekyll), and that version replaces the real site.
+- **A failed build publishes nothing.** If `npm run build` fails in the workflow, the site stays as it was. Run the build locally first to see the same error.
+
+### Custom domain
+
+The site is going to be served at `bitphilology.dh.unibe.ch`. This is not set up yet; the steps, from the [GitHub documentation on custom domains](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site), are:
+
+1. The IT service of the university adds a DNS record of type `CNAME` for `bitphilology.dh.unibe.ch` that points to `bitphilology.github.io`.
+2. Under **Settings → Pages → Custom domain**, enter `bitphilology.dh.unibe.ch` and save. GitHub checks the DNS record.
+3. When the check passes and the certificate is ready, tick **Enforce HTTPS**.
+
+Nothing has to change in the code: the site is served from the root of its domain in both cases, and its links do not contain the domain. With a deployment through GitHub Actions the domain is kept in the settings of the repository, so no `CNAME` file is needed in `static/`. After the switch, `bitphilology.github.io` redirects to the new address.
+
+## Recreating the project
+
+The project was created with the Svelte CLI, [`sv`](https://github.com/sveltejs/cli):
+
+```sh
 npx sv@0.15.3 create --template minimal --types ts --install npm .
 ```
 
-## Developing
+and then extended with `@sveltejs/adapter-static`, Tailwind CSS v4 (`tailwindcss`, `@tailwindcss/vite`), the Fontsource fonts, `pixelarticons`, the unified packages for Markdown and `yaml`. The exact versions are in [`package.json`](package.json).
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## License
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment
+The repository is released under the Creative Commons Attribution-ShareAlike 4.0 International license: see [LICENSE](LICENSE).

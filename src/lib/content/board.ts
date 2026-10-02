@@ -15,7 +15,7 @@ export function toBoardMembers(value: unknown, { file, field }: Context): BoardM
 		const data = isRecord(entry) ? entry : {};
 		const name = text(data.name);
 		if (!name) problems.push(`entry ${index + 1} has no name`);
-		return { name: name ?? '', affiliation: text(data.affiliation), externalURL: text(data.externalURL) };
+		return { name: name ?? '', affiliation: text(data.affiliation), externalURL: text(data['external-url']) };
 	});
 	if (problems.length) throw new Error(`Invalid "${field}" in ${file}: ${problems.join('; ')}.`);
 	return members;

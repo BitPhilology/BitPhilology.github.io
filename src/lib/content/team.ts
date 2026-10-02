@@ -39,7 +39,7 @@ export function toMembers(value: unknown, { file, field, resolveAsset }: Context
 			role: role ?? '',
 			affiliation: text(data.affiliation),
 			photo: photo && resolveAsset(photo),
-			externalURL: text(data.externalURL)
+			externalURL: text(data['external-url'])
 		};
 	});
 	if (problems.length) throw new Error(`Invalid "${field}" in ${file}: ${problems.join('; ')}.`);
