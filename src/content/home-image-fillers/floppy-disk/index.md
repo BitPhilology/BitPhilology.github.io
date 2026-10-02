@@ -4,7 +4,7 @@
 #  An image for a tile of the Home page. The note holds these settings
 #  and, below them, one image and nothing else.
 #  How it works:
-#  https://github.com/BitPhilology/BitPhilology.github.io/blob/main/docs/CONTENT.md
+#  https://github.com/BitPhilology/bit-philology-website/blob/main/docs/CONTENT.md
 #
 #  Lines that start with "#" are notes for you: the website ignores them.
 # ══════════════════════════════════════════════════════════════════════
@@ -45,6 +45,6 @@ source: https://pad.dsl.unibe.ch/Dx1dAyfARmWInM8OKl4hRQ
 importedAt: 2026-09-30T22:14:07Z
 ---
 
-![Exploded diagram of a 3.5-inch floppy disk, with its parts stacked vertically and labelled: top shell, woven liner, magnetic disk with central hub, a second woven liner, and bottom shell. The metal shutter and its spring sit to the lower left, and the write-protect tab is marked at the right edge. A note says that a lifter presses the liners against the disk to trap dust.](./assets/floppy-components.png "Exploded view of a 3.5-inch floppy disk, showing its components: shells, woven liners, magnetic disk, shutter and write-protect tab.")
+![BitPhilology logo: the word "BitPhilology" in a black pixelated monospaced typeface, centered between two stacks of horizontal black lines. The lines swell and taper like lens shapes, forming a roughly circular disc in the upper and lower halves. The top-left corner of the overall outline is cut diagonally, giving the shape of a floppy disk.](./assets/floppy-components.png "The BitPhilology logo. The pixelated monospaced lettering recalls the writing environments of the first digital devices, on which many literary works were composed. The overall outline, with its cut corner, takes the shape of a floppy disk, one of the main storage media of the period the project investigates. The lines of varying thickness evoke the magnetic tracks of storage devices from the 1980s to the early 2000s, and together they form the circular magnetic disc housed inside the square plastic casing.")
 
 

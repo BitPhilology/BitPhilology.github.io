@@ -11,6 +11,11 @@ const config = {
 			pages: 'build',
 			assets: 'build'
 		}),
+		// The path the site is served under: empty at the root of a domain, "/<repository>" on a
+		// GitHub Pages project site. The deployment sets BASE_PATH; never hardcode it.
+		paths: {
+			base: process.env.BASE_PATH ?? ''
+		},
 		prerender: {
 			entries: ['*']
 		}

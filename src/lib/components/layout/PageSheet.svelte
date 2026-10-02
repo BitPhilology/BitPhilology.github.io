@@ -8,6 +8,7 @@
 	import arrowRight from 'pixelarticons/svg/arrow-right.svg?raw';
 	import closeIcon from 'pixelarticons/svg/close.svg?raw';
 	import type { Attachment } from 'svelte/attachments';
+	import { resolve } from '$app/paths';
 	import type { DOCK } from '$lib/categories';
 	import Icon from '$lib/components/Icon.svelte';
 	import IconLabel from '$lib/components/ui/IconLabel.svelte';
@@ -50,7 +51,7 @@
 		{#each posts as post (post.href)}
 			<li class="border-t border-(--cat-darker)">
 				<a
-					href={post.href}
+					href={resolve(post.href)}
 					class={['flex min-h-13 items-center gap-3 px-4 py-3 text-(--cat-darker)', TEXT['body/strong']]}
 				>
 					<span class="flex-1">{post.title}</span>

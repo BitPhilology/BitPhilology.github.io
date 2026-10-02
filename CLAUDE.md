@@ -7,7 +7,8 @@ Instructions for the LLM coding assistant working on this repository. We use Cla
 The Bit Philology website: a static site built with SvelteKit and deployed to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`.
 
 - Svelte 5 and SvelteKit 2, TypeScript, Vite 8
-- `@sveltejs/adapter-static`: every route is prerendered (`export const prerender = true` in `src/routes/+layout.ts`) and the site is written to `build/`
+- `@sveltejs/adapter-static`: every route is prerendered (`export const prerender = true` in `src/routes/+layout.ts`) and the site is written to `build/`, one `<path>/index.html` per page (`trailingSlash = 'always'`)
+- The site may be served under a base path (a GitHub Pages project site) or at the root of a domain: `kit.paths.base` is `process.env.BASE_PATH ?? ''`, and the deploy workflow sets `BASE_PATH` from what GitHub Pages reports. Never hardcode the base path, and never write an internal link or asset as a bare absolute path (see [Links and assets](#links-and-assets))
 - Tailwind CSS v4 through `@tailwindcss/vite`, with no plugins
 - Fonts self-hosted with Fontsource
 - Icons from `pixelarticons`
@@ -233,6 +234,16 @@ tags: website/home-image-filler
 
 - Svelte 5 with runes (`$state`, `$derived`, `$effect`, `$props`). Runes mode is forced in `svelte.config.js`, so do not use the legacy syntax (`export let`, `$:`, `on:click`).
 - Use the Svelte MCP server, configured in `.mcp.json`, as described below.
+
+### Links and assets
+
+The site must work both at the root of a domain and under a base path, so nothing may point to `/…` directly.
+
+- A page of the site is named by its path inside the site, with a trailing slash: `/about/team/` (`Post.href`, typed `Pathname`). In markup, pass it through `resolve()` from `$app/paths`: `<a href={resolve(post.href)}>`. Do not use the deprecated `base`.
+- Files of `static/` go through `asset()` from `$app/paths`. Images and fonts imported in the code (`import logo from '…png'`, `import.meta.glob(…, { query: '?url' })`) are already base-aware.
+- URLs that come from the content (links and images of a body, `download-link`, `external-url`) go through `siteUrl()` in `src/lib/content/links.ts`, which adds the base path to a path that starts with `/` and leaves everything else as it is.
+- Do not compare `page.url.pathname` with a path of the site: it holds the base path. Use `page.route.id` and `page.params`, as `activeCategory()` does.
+- After touching links, run `BASE_PATH=/bit-philology-website npm run build` as well as `npm run build`: the prerenderer fails on an internal link that leads nowhere.
 
 ### Svelte MCP server
 

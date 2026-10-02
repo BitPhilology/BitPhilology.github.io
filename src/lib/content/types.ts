@@ -1,4 +1,5 @@
 // The content model: what the loader (src/lib/server/content.ts) reads from src/content.
+import type { Pathname } from '$app/types';
 import type { Category, PostType } from '$lib/categories';
 
 /** A post: src/content/<section>/<slug>/index.md, any type except home-image-filler. */
@@ -6,8 +7,11 @@ export interface Post {
 	type: PostType;
 	/** Folder relative to src/content, e.g. "events/digital-forensics-in-the-humanities". */
 	path: string;
-	/** The URL of the post page: the folder path. */
-	href: string;
+	/**
+	 * The path of the post page inside the site: the folder path, with a trailing slash. Links go
+	 * through resolve() from $app/paths, which adds the base path of the deployment.
+	 */
+	href: Pathname;
 	title: string;
 	subtitle?: string;
 	/** `YYYY-MM-DD`, or `YYYY`. */
@@ -55,7 +59,8 @@ export interface ImageFillerContent {
 /** A post in the list of the dock's page sheet. */
 export interface PostLink {
 	title: string;
-	href: string;
+	/** The path of the page inside the site, as `Post.href`. */
+	href: Pathname;
 }
 
 /** A person in the member list of the Team page: an entry of `members`. */

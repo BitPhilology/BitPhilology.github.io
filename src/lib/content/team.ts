@@ -1,5 +1,6 @@
 // The member list of the Team page: the front matter parser and the Team Member size rule.
 import { isRecord, text } from './fields';
+import { siteUrl } from './links';
 import type { Member } from './types';
 
 /** The Figma "Size" property of Team Member. */
@@ -34,12 +35,13 @@ export function toMembers(value: unknown, { file, field, resolveAsset }: Context
 		if (!name) problems.push(`${which} has no name`);
 		if (!role) problems.push(`${which} has no role`);
 		const photo = text(data.photo);
+		const externalURL = text(data['external-url']);
 		return {
 			name: name ?? '',
 			role: role ?? '',
 			affiliation: text(data.affiliation),
 			photo: photo && resolveAsset(photo),
-			externalURL: text(data['external-url'])
+			externalURL: externalURL && siteUrl(externalURL)
 		};
 	});
 	if (problems.length) throw new Error(`Invalid "${field}" in ${file}: ${problems.join('; ')}.`);

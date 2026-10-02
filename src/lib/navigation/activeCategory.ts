@@ -7,9 +7,12 @@ import { categoryForPath, categoryOf, type Category } from '$lib/categories';
 /**
  * On a post page, the category of the post's `type` (from its load data, team → about); on list
  * pages and Home, the category of the URL. The two must agree: in development a mismatch is logged.
+ *
+ * The URL is read as the route, with the rest parameter of post pages filled in, and not as
+ * page.url.pathname, which also holds the base path the site is deployed under.
  */
 export function activeCategory(): Category {
-	const fromUrl = categoryForPath(page.url.pathname);
+	const fromUrl = categoryForPath(page.params.path ? `/${page.params.path.replace(/\/+$/, '')}` : (page.route.id ?? '/'));
 	const { postType } = page.data;
 	if (!postType) return fromUrl;
 	const fromPost = categoryOf(postType);

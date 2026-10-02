@@ -4,7 +4,7 @@
 #  An image for a tile of the Home page. The note holds these settings
 #  and, below them, one image and nothing else.
 #  How it works:
-#  https://github.com/BitPhilology/BitPhilology.github.io/blob/main/docs/CONTENT.md
+#  https://github.com/BitPhilology/bit-philology-website/blob/main/docs/CONTENT.md
 #
 #  Lines that start with "#" are notes for you: the website ignores them.
 # ══════════════════════════════════════════════════════════════════════

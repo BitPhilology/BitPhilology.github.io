@@ -6,12 +6,15 @@
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { resolve } from '$app/paths';
+	import type { Pathname } from '$app/types';
 
-	let { href, children }: { href: string; children: Snippet } = $props();
+	/** `href` is the path of the post inside the site (Post.href). */
+	let { href, children }: { href: Pathname; children: Snippet } = $props();
 </script>
 
 <a
-	{href}
+	href={resolve(href)}
 	class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-(--cat-darker)"
 >
 	{@render children()}

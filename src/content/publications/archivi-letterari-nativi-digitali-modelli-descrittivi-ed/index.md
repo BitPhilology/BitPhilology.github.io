@@ -2,7 +2,7 @@
 # ══════════════════════════════════════════════════════════════════════
 #  PAGE SETTINGS
 #  How to write a page:
-#  https://github.com/BitPhilology/BitPhilology.github.io/blob/main/docs/CONTENT.md
+#  https://github.com/BitPhilology/bit-philology-website/blob/main/docs/CONTENT.md
 #
 #  Lines that start with "#" are notes for you: the website ignores them.
 #  Every type of page has the same settings. Some of them only apply to

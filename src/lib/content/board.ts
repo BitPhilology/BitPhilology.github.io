@@ -1,5 +1,6 @@
 // The advisory board list of the About page: the front matter parser.
 import { isRecord, text } from './fields';
+import { siteUrl } from './links';
 import type { BoardMember } from './types';
 
 interface Context {
@@ -15,7 +16,8 @@ export function toBoardMembers(value: unknown, { file, field }: Context): BoardM
 		const data = isRecord(entry) ? entry : {};
 		const name = text(data.name);
 		if (!name) problems.push(`entry ${index + 1} has no name`);
-		return { name: name ?? '', affiliation: text(data.affiliation), externalURL: text(data['external-url']) };
+		const externalURL = text(data['external-url']);
+		return { name: name ?? '', affiliation: text(data.affiliation), externalURL: externalURL && siteUrl(externalURL) };
 	});
 	if (problems.length) throw new Error(`Invalid "${field}" in ${file}: ${problems.join('; ')}.`);
 	return members;

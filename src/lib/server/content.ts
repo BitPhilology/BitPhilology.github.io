@@ -3,6 +3,7 @@
 import { parseDocument } from 'yaml';
 import { categoryOf, type Category } from '$lib/categories';
 import { toFiller } from '$lib/content/fillers';
+import { siteUrl } from '$lib/content/links';
 import { splitFrontMatter } from '$lib/content/markdown';
 import { byDate, toPost } from '$lib/content/posts';
 import type { ImageFillerContent, Post, PostLink, PostPage } from '$lib/content/types';
@@ -44,11 +45,12 @@ const posts = [...sources.values()].map(({ post }) => post).sort(byDate);
 
 /**
  * The built URL of a file of a content folder, such as ./assets/photo.jpg (localised by the import
- * script). A URL with a scheme, such as a placeholder image, stays as it is.
+ * script). A URL with a scheme, such as a placeholder image, stays as it is; a path of the site,
+ * such as a file of static/, gets the base path of the deployment.
  */
 function resolveAsset(folder: string, src: string): string {
 	if (/^[a-z][a-z\d+.-]*:/i.test(src)) return src;
-	return assets[new URL(src, `file://${CONTENT}${folder}/`).pathname] ?? src;
+	return assets[new URL(src, `file://${CONTENT}${folder}/`).pathname] ?? siteUrl(src);
 }
 
 /** Every post, newest first. */

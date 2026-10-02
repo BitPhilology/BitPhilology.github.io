@@ -1,10 +1,17 @@
 // Turns the front matter and body of a markdown file into a Post, and orders posts.
 import { isPostType } from '$lib/categories';
 import { flag, list, text } from './fields';
+import { siteUrl } from './links';
 import { firstParagraph, toPlainText } from './markdown';
 import type { Post } from './types';
 
 type FrontMatter = Record<string, unknown>;
+
+// A link of the front matter: a path of the site gets the base path of the deployment.
+const link = (value: unknown) => {
+	const url = text(value);
+	return url && siteUrl(url);
+};
 
 // Titles may hold markdown (e.g. *born-digital*); cards and lists show them as plain text.
 const plain = (value: unknown) => {
@@ -25,7 +32,7 @@ export function toPost(path: string, data: FrontMatter, body: string): Post {
 	return {
 		type,
 		path,
-		href: `/${path}`,
+		href: `/${path}/`,
 		title,
 		subtitle: plain(data.subtitle),
 		date: text(data.date),
@@ -39,7 +46,7 @@ export function toPost(path: string, data: FrontMatter, body: string): Post {
 		keywords: list(data.keywords),
 		kind: text(data.kind),
 		doi: text(data.doi),
-		downloadLink: text(data['download-link'])
+		downloadLink: link(data['download-link'])
 	};
 }
 

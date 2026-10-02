@@ -6,7 +6,8 @@ import type { EntryGenerator, PageServerLoad } from './$types';
 export const entries: EntryGenerator = () => getPosts().map(({ path }) => ({ path }));
 
 export const load: PageServerLoad = ({ params }) => {
-	const page = getPage(params.path);
+	// With trailingSlash: 'always' the rest parameter keeps the slash at the end of the URL.
+	const page = getPage(params.path.replace(/\/+$/, ''));
 	if (!page) error(404, 'Not found');
 	return { page, postType: page.post.type };
 };

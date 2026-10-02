@@ -41,7 +41,7 @@ src/content/**/index.md
 
 ## Content model
 
-A post is `src/content/<section>/<slug>/index.md`; its URL is its folder, e.g. `/events/<slug>`. The `[...path]` route prerenders one page per post (`entries` lists them). Home image fillers have no page. `src/content/contents.yaml`, the list of the HedgeDoc notes, belongs to the import script: the site never reads it (see `CLAUDE.md`).
+A post is `src/content/<section>/<slug>/index.md`; its URL is its folder, with a trailing slash, e.g. `/events/<slug>/` (`Post.href`). That is a path inside the site: the base path of the deployment is added when the link is rendered (see [Links and the base path](#links-and-the-base-path)). The `[...path]` route prerenders one page per post (`entries` lists them). Home image fillers have no page. `src/content/contents.yaml`, the list of the HedgeDoc notes, belongs to the import script: the site never reads it (see `CLAUDE.md`).
 
 Every page has the same front matter, the one of `docs/templates/page.md`. A field that does not apply to the type of the page is ignored, and an empty field counts as missing: the readers of `src/lib/content/fields.ts` (`text`, `list`, `flag`) turn empty values into nothing.
 
@@ -285,6 +285,15 @@ The custom axes of the pixel font (Bitcount Prop Single) are the exception: they
 | `pixel/note` | `font-pixel-note` | 0 | 50 | 0 |
 
 Figma styles without markup of their own are not in `TEXT`: `body/italic` (the site uses Mona Sans italic; Figma still names Instrument Sans), `body/link`, `body/name-link`, `body/del`, `table/*` and `code/code-block`.
+
+## Links and the base path
+
+The site is prerendered with `trailingSlash = 'always'` (`src/routes/+layout.ts`), so every page is `<path>/index.html`, and it may be deployed under a base path: `kit.paths.base` is the `BASE_PATH` environment variable, empty by default (`svelte.config.js`). Nothing in the code holds the base path.
+
+- **Pages.** `Post.href`, `PostLink.href` and the `route` of a registry entry are paths inside the site (`/about/team/`), typed `Pathname`. The components that link to them call `resolve()` from `$app/paths`: `CardLink`, `PageSheet`, `NavDockItem`, `Colophon`, and `pageIndex()` for the page index. In the prerendered HTML these links are relative (`../../about/team/`); after hydration they are absolute, with the base path.
+- **Content.** `siteUrl()` (`src/lib/content/links.ts`) adds the base path to the URLs written in the content that start with `/`: the links of a body (`decorate` in `src/lib/server/markdown.ts`), the images that are not files of the page (`resolveAsset` in `src/lib/server/content.ts`), `download-link` and `external-url`.
+- **Assets.** The images of the content (`import.meta.glob` with `?url`), the partner logos, the favicon and the fonts are handled by Vite, which writes them under `<base>/_app/immutable/`.
+- **The current page.** `activeCategory()` reads the route (`page.route.id`, and the rest parameter of post pages) and not `page.url.pathname`, which holds the base path. With `trailingSlash = 'always'` the rest parameter ends with a slash: the `[...path]` loader removes it before looking the post up.
 
 ## Conventions
 

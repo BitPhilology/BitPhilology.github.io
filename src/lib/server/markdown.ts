@@ -20,6 +20,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
+import { siteUrl } from '$lib/content/links';
 import { findMarkers, markerName } from '$lib/content/markers';
 import type { BodyBlock, Heading, Note, RenderedBody } from '$lib/content/types';
 import { EMBEDS, isEmbedName, type EmbedName } from '$lib/embeds';
@@ -219,8 +220,8 @@ function renderNote({ id, label, definition }: NoteSource, resolveAsset: (src: s
 
 /**
  * Adds the classes of MARKDOWN_CLASSES (LEAD_CLASSES for the lead), resolves the image paths and
- * drops the links and images whose URL has an unsafe scheme (javascript:, data:, …), since the
- * HTML is injected as it is.
+ * the links to pages of the site, and drops the links and images whose URL has an unsafe scheme
+ * (javascript:, data:, …), since the HTML is injected as it is.
  */
 function decorate(node: HastRoot | Element, resolveAsset: (src: string) => string) {
 	for (const child of node.children) {
@@ -236,6 +237,8 @@ function decorate(node: HastRoot | Element, resolveAsset: (src: string) => strin
 			const url = child.properties[attribute];
 			if (typeof url === 'string' && !isSafeUrl(url)) delete child.properties[attribute];
 		}
+		// A link to a page of the site, written as /about/team/, gets the base path of the deployment.
+		if (typeof child.properties.href === 'string') child.properties.href = siteUrl(child.properties.href);
 		if (child.tagName === 'img' && typeof child.properties.src === 'string') {
 			child.properties.src = resolveAsset(child.properties.src);
 		}

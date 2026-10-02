@@ -6,6 +6,7 @@ import home from 'pixelarticons/svg/home.svg?raw';
 import printer from 'pixelarticons/svg/printer.svg?raw';
 import robot from 'pixelarticons/svg/robot.svg?raw';
 import sparkle from 'pixelarticons/svg/sparkle.svg?raw';
+import type { Pathname } from '$app/types';
 import { longDate, monthYear, shortDate, yearOf } from '$lib/content/dates';
 import { present } from '$lib/content/fields';
 import type { Post } from '$lib/content/types';
@@ -24,8 +25,11 @@ interface Entry {
 	label: string;
 	/** Raw pixelarticons SVG. */
 	icon: string;
-	/** The list page of the entry; its posts live below it, e.g. /events/<slug>. */
-	route: string;
+	/**
+	 * The list page of the entry, as a path inside the site; its posts live below it, e.g.
+	 * /events/<slug>. A link to it goes through resolve() from $app/paths.
+	 */
+	route: Pathname;
 	/** Colour theme, and the dock entry that stands for this entry. */
 	category: Category;
 	/** Label in the navigation dock, e.g. "Events"; null when the entry has no dock item. */
@@ -173,7 +177,10 @@ export function categoryOf(type: PostType): Category {
 	return POST_TYPES[type].category;
 }
 
-/** The category of a URL: the entry whose route is the longest prefix of the path; Home otherwise. */
+/**
+ * The category of a path inside the site (without the base path of the deployment): the entry
+ * whose route is the longest prefix of the path; Home otherwise.
+ */
 export function categoryForPath(pathname: string): Category {
 	const match = Object.values(POST_TYPES)
 		.filter(({ route }) => pathname === route || pathname.startsWith(`${route}/`))

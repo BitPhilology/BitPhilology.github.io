@@ -4,6 +4,7 @@
 	item gets the tinted background and the dithered cap.
 -->
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import type { DOCK } from '$lib/categories';
 	import IconLabel from '$lib/components/ui/IconLabel.svelte';
 	import Dither from '$lib/components/ui/Dither.svelte';
@@ -60,7 +61,7 @@
 					{@render content()}
 				</button>
 			{:else}
-				<a href={entry.route} class={CELL} aria-current={active ? 'page' : undefined}>
+				<a href={resolve(entry.route)} class={CELL} aria-current={active ? 'page' : undefined}>
 					{@render content()}
 				</a>
 			{/if}
