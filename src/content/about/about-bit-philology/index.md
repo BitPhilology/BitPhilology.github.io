@@ -23,7 +23,40 @@ keywords:
 - ipsum
 - dolor
 
-pinned: true
+# list of advisory board members, shown where the text has the {{advisory-board}} marker.
+# Only the name is required: a member without affiliation or externalURL is shown without it.
+advisory_board:
+- name: Emmanuela Carbé
+  affiliation: Università Ca' Foscari Venezia
+  externalURL: https://www.unive.it/persone/emmanuela.carbe
+
+- name: Paola Maria Carmela Italia
+  affiliation: Università di Bologna
+  externalURL: https://www.unibo.it/sitoweb/paola.italia/en
+
+- name: Matthew G. Kirschenbaum
+  affiliation: University of Virginia
+  externalURL: https://english.as.virginia.edu/people/matthew-kirschenbaum
+
+- name: Elena Pierazzo
+  affiliation: Université de Tours
+  externalURL: https://cesr.cnrs.fr/membre/pierazzo-elena/
+
+- name: Thorsten Ries
+  affiliation: The University of Texas at Austin
+  externalURL: https://liberalarts.utexas.edu/eue/faculty/tr24969
+
+- name: Francesca Tomasi
+  affiliation: Università di Bologna
+  externalURL: https://www.unibo.it/sitoweb/francesca.tomasi/en
+
+- name: Joris van Zundert
+  affiliation: Huygens Institute (KNAW)
+  externalURL: https://jorisvanzundert.net/
+
+# position of the card in the Home grid: 1 is the first tile, 2 the second…; -1 is the last tile.
+# Leave it empty to follow the date (newest first).
+position: 2
 source: https://pad.dsl.unibe.ch/IMcrjOtPTSuAKrw46RXggg
 importedAt: 2026-09-30T18:43:03Z
 
@@ -60,3 +93,9 @@ The project is organised around 3 main actions.
 * Description of born-digital archives
 * Edition of born-digital archives
 * Analysis: looking for genetic dossiers
+
+#### Advisory Board
+
+The project is accompanied by an international advisory board. Its members are scholars based at universities and research institutes in Europe and the United States, and their work covers the fields the project draws on: authorial philology and the study of Italian literature, digital scholarly editing and text encoding, born-digital archives and digital forensics, archival science, and computational literary studies.
+
+{{advisory-board}}

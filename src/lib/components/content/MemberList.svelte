@@ -1,7 +1,7 @@
 <!--
 	Member list (Figma "Members" in the Team frames): a column of Team Member cards, one per entry of a
 	front matter list. The size of each card follows the member's role (memberSize). Placed in the
-	body by the {{team}} and {{advisory-board}} markers (src/lib/embeds.ts).
+	body by the {{team}} marker (src/lib/embeds.ts).
 -->
 <script lang="ts">
 	import { memberSize } from '$lib/content/team';

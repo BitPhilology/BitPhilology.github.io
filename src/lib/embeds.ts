@@ -2,7 +2,9 @@
 // a component with the data of a front matter field, where the marker stands. Editors move the
 // marker to move the embed. To add an embed, add one entry here; see docs/ARCHITECTURE.md.
 import type { Component } from 'svelte';
+import BoardMemberList from '$lib/components/content/BoardMemberList.svelte';
 import MemberList from '$lib/components/content/MemberList.svelte';
+import { toBoardMembers } from '$lib/content/board';
 import { toMembers } from '$lib/content/team';
 
 export interface EmbedContext {
@@ -27,7 +29,7 @@ const embed = <T>(entry: Embed<T>) => entry;
 
 export const EMBEDS = {
 	team: embed({ field: 'members', parse: toMembers, component: MemberList }),
-	'advisory-board': embed({ field: 'advisory_board', parse: toMembers, component: MemberList })
+	'advisory-board': embed({ field: 'advisory_board', parse: toBoardMembers, component: BoardMemberList })
 };
 
 export type EmbedName = keyof typeof EMBEDS;

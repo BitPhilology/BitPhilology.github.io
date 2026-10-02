@@ -18,5 +18,5 @@ importedAt: 2026-09-30T21:02:55Z
 # Here the alt text (first string) is for accessibility/screen readers, while the title (in quotes) becomes the visible caption text. This is the cleanest pattern because it separates the two responsibilities: alt = description for those who cannot see the image, title = editorial caption, which can be longer or more formal.
 ---
 
-![Black-and-white line drawing of a hard disk seen from above. A large circular platter is covered in thin concentric rings, with a small central hub held by six screws. A long arm on the left, labelled "Suspension Arm", reaches from a round "Rotary Actuator" toward the platter, where its tip, labelled "Slider", touches the surface.](./assets/f55842a8-dbd3-4fa5-a9c2-0e32f668402f.png
+![Black-and-white line drawing of a hard disk seen from above. A large circular platter is covered in thin concentric rings, with a small central hub held by six screws. A long arm on the left, labelled "Suspension Arm", reaches from a round "Rotary Actuator" toward the platter, where its tip, labelled "Slider", touches the surface.](./assets/hard-drive-components.png
  "A hard disk drive, seen from above. The platter is divided into thin concentric tracks. A rotary actuator swings the suspension arm across them, and the slider at its tip reads and writes the magnetic data on the track below it.")

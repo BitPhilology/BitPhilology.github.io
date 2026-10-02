@@ -1,28 +1,29 @@
 <!--
-	Post meta (Figma "Post Meta"): the bottom row of a post card, the pills and then the arrow link
-	to the post. Without pills, as on About and Team cards, the arrow is centred.
+	Post meta (Figma "Post" › Post Meta): the top row of a post card, the icon of the post type in an
+	icon pill on the left and the pills on the right. When the pills do not fit, the last one is cut
+	with an ellipsis.
 -->
 <script lang="ts">
-	import arrowRight from 'pixelarticons/svg/arrow-right.svg?raw';
 	import Pill from '$lib/components/ui/Pill.svelte';
 
 	interface Props {
+		/** The icon of the post type. */
+		icon: string;
+		/** The name of the post type, which the icon stands for. */
+		label: string;
 		pills: string[];
-		href: string;
-		/** The post title, to name the arrow link. */
-		title: string;
 	}
 
-	let { pills, href, title }: Props = $props();
+	let { icon, label, pills }: Props = $props();
 </script>
 
-<div class={['relative flex shrink-0 items-center gap-2', !pills.length && 'justify-center']}>
+<div class="flex shrink-0 items-center justify-between gap-2">
+	<Pill variant="icon" {icon} {label} />
 	{#if pills.length}
-		<ul class="flex min-w-0 flex-1 gap-1 overflow-hidden">
+		<ul class="flex min-w-0 gap-2 overflow-hidden">
 			{#each pills as pill, index (index)}
-				<li><Pill label={pill} /></li>
+				<li class="shrink-0 last:min-w-0 last:shrink"><Pill label={pill} /></li>
 			{/each}
 		</ul>
 	{/if}
-	<Pill variant="icon" icon={arrowRight} {href} label={`Open “${title}”`} />
 </div>

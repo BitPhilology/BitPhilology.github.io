@@ -14,8 +14,13 @@ export interface Post {
 	date?: string;
 	/** The `excerpt:` field, or else the first paragraph of the body as plain text. */
 	excerpt: string;
-	/** Pinned posts come first on Home. */
-	pinned: boolean;
+	/**
+	 * Where the card sits in the Home grid (the `position` field): 1 is the first tile, -1 the last.
+	 * Without it the post follows its date, newest first.
+	 */
+	position?: number;
+	/** A post with `hidden-from-home: true` has no card on Home. */
+	hiddenFromHome: boolean;
 	/** Publications and artifacts, e.g. "E. Spadini, E. Barchielli". */
 	authors?: string;
 	/** Publication venue, or where an event takes place. */
@@ -53,7 +58,7 @@ export interface PostLink {
 	href: string;
 }
 
-/** A person in a member list of the Team page: an entry of `members` or `advisory_board`. */
+/** A person in the member list of the Team page: an entry of `members`. */
 export interface Member {
 	name: string;
 	role: string;
@@ -61,6 +66,14 @@ export interface Member {
 	/** The image URL: a localised ./assets/ file, resolved to its built URL, or a remote placeholder. */
 	photo?: string;
 	/** The member's page elsewhere, linked from the name. */
+	externalURL?: string;
+}
+
+/** A person in the advisory board list of the About page: an entry of `advisory_board`. */
+export interface BoardMember {
+	name: string;
+	affiliation?: string;
+	/** The member's page elsewhere, linked from the icon after the name. */
 	externalURL?: string;
 }
 

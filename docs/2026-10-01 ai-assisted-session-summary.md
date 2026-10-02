@@ -1,83 +1,95 @@
-# Import from Penpot to figma
+# Bit Philology — session summary
 
-This is what you have to do:
+- **Chat name:** Figma BitPhilology
+- **Model used in this chat:** Claude Sonnet 5.5 (Medium effort)
+- **Date of the summary:** 2026-10-01
+- **Figma file (Pro team):** "Bit Philology Website PRO", file key `OOCuuEYo0V7Me2Z5p9uqs5`
+- **Source design file:** Penpot, "Bento website" (old version, used only as a style reference)
 
-Read from the open Penpot file
-- Identify Fundamental elements of visual identity and DLS
-- Identify fundamental components
-- Copy them into the Figma file in the current page (that becomes "Components")
-
----
-
-Then:
-- I added the real logo as a component, please use it across the other components
-- Team Member photos: I will embed an image in the components
-- I removed the hello claude text.
-
-Please align the elements on the components page in a professional way.
+This document summarises what happened in the session, step by step, and **preserves the final version of every prompt** written for separate Claude Code sessions in VS Code. Iterations are summarised, not repeated.
 
 ---
 
-Clone in Figma the "Breakpoints" page you can find in Penpot
+## 1. Setting up the tools
+
+- The session started with only a chat name. I listed what the Figma connector and the Figma skills could do.
+- The Figma connector was signed in as the university account (Starter plan, View seat), so it hit the **MCP rate limit** quickly. Even after switching the connector to the personal Gmail account (Full seat on a Pro team), the **file** still sat in the Starter team, and calls were counted there.
+- Fix: the file was duplicated into the Pro team as **"Bit Philology Website PRO"** (new file key above). From then on there were no rate-limit problems.
+- The **Penpot MCP plugin** disconnected many times during the session. Each time the user reconnected it from the Penpot plugins menu.
+
+## 2. Importing the design language system from Penpot into Figma
+
+**Request:** read the open Penpot file, identify the fundamentals of the visual identity and the design language system (DLS), identify the fundamental components, and copy them into the Figma file, on a page that becomes "Components".
+
+What was found in Penpot: pages *Visual Identity, DLS, Components, Desktop, Breakpoints*; a token set "Bit Philology" on top of a Tailwind set (colours, typography, spacing, radius, shadows, sizes).
+
+What was built in Figma:
+- **Variables:** a `Colors` collection (18 variables: category colours about/event/publication/artifact in lighter/main/darker, surfaces, neutral text) and a `Dimensions` collection (spacing, border, breakpoints).
+- **27 text styles** from the Penpot typography tokens (Mona Sans, Bitcount Prop Single for the pixel/metadata style, JetBrains Mono for code, Instrument Sans for italic).
+- **Icons** as vector components (28: 11 pixel-art icons and 17 Bootstrap icons; several Bootstrap icons render imperfectly and the user decided to handle icons separately).
+- **Components:** Pill (15 variants), Category Signifier, Post Header, Post (5 category variants), Team Member (3 sizes), Image, Navigation, Footer (Colophon + Partner Logo), later Image Container and Image Filler.
+- **Reference sheets:** Colors and Typography on the Components page; the Page was later laid out in two columns, Foundations (left) and Components (right).
+- The real **Logo** component (dithered pixel wordmark, about 8.5 MB of vector data in the dithered Penpot version) was added by the user.
+
+## 3. Pages and breakpoints
+
+- **Breakpoints page:** cloned from Penpot (7 white frames with grey tile grids). The user later marked four boards with a "V" prefix in Penpot (375 iPhone 13 mini, 640, 1024, 1280). Those four are the **Tailwind breakpoints** (base, `sm`, `lg`, `xl`) used for every design.
+- **Home page:** four frames (375/640/1024/1280) built from the Penpot Home content with the existing components. The Home grid has 1, 2, 3 and 4 columns of square tiles.
+- **Page Template:** the generic content page at the four breakpoints. At 1280 the content sits in columns 2–3 with sidenotes in column 4; at 1024 in columns 1–2 with notes in column 3; at 640 and 375 it is a single stack. Later, Figma's new **grid layout** was adopted for Home and for the Page Template (4/3 columns with column spans, footers as 1/2/3/4-column grids).
+- **Publication cards** keep a two-column layout (title left, authors and venue bottom-aligned on the right); long titles use a smaller existing style instead of a different layout.
+
+## 4. Navigation redesign
+
+**Problem (from the user):** the old Navigation block took too much space at the top at 375 and 640; at 1024 the notes ended up on the left; the nav only worked well on Home; and the category buttons looked like the category label above each title.
+
+**Process:** three sub-agents each designed three solutions on a "Navigation proposals" page — a conservative/functional agent (A), a visual-identity agent (B), and an early-2000s-operating-system agent (C). Each then critiqued the other two agents' six proposals. The outcome (a score table and what to keep or drop) was collected on the same page, and a first "Navigation Index" final proposal was built.
+
+**User decision:** they preferred **B2 (Dithered Dock)** and the stacked sheet of A2. This led to **Dock v2**:
+- A **bottom dock on every breakpoint**, taking no grid column. Styles: phone, compact, wide.
+- The active category has a tinted cell with a **dithered cap** that spans the full cell width.
+- A **dithered top stroke** fixed at the top of the screen, in the category colour (the logo header was dropped).
+- A **page sheet** that stacks above the dock and lists the pages of a category.
+- Dock and stroke are **fixed-position children** so they stay put when the prototype scrolls.
+- The components were moved to the Components page in a "Navigation" group. The Navigation proposals page and the old Navigation component were kept for later deletion.
+- At 1280 the Page Template got an empty-first-column solution: a **page index** ("On this page" + "In <category>").
+
+## 5. Images
+
+- **Image Filler** component (floppy, disk, folder, magnetic, logo): the image blended with **Screen** over the accent category's dark colour, with a white outline (copied from Penpot). The tile has no background (as in Penpot).
+- The first images came from the web. The user later replaced them with **new AI-generated images** without licensing issues (variants Floppy2, Computer, Hard Disk Drive, Folder, Image10). Home was switched to the new variants, matching the slot colours.
+- A **Pictures board** on the Components page holds the image sources, the OLD material (old variants and images, to be deleted), the example image of the Image Container, and the **documentation of the AI image generation**: vocabulary, template prompts, the four exact prompts with their negative prompts, tips, and an image-to-prompt table. (The `Computer` image has no recorded prompt yet.)
+- **Image Container** component: white frame, panel in the category colour, the example image on top with the same Screen blend. It replaced the dark-green placeholder in the Page Template.
+
+## 6. Category templates in Figma
+
+Using the current Figma system (dock, grid, tokens) and the old Penpot boards only as a structural reference, one Figma page per template was built, each at 375/640/1024/1280: **About, Team, Events, Artifacts, Publications**.
+- Team: main members (large) and associated members (medium) lists.
+- Events: Location and Date lines under the subtitle, big image, sections.
+- Artifacts: big image, long paragraphs with two sidenotes.
+- Publications: a special header (title, authors, venue, DOI, Download).
+- Colours follow the page category; `team` counts as `about`.
+
+## 7. Prompts for Claude Code (separate sessions)
+
+The code project is SvelteKit with Tailwind, design tokens already imported into a CSS file described in `CLAUDE.md`. Content is **markdown files in the repository**; front matter has a `type` field (`about`, `artifact`, `publication`, `event`, `team`, `home-image-filler`). Remote images in markdown are downloaded and localised by the existing HedgeDoc sync script.
+
+Key decisions that shaped the prompts (and what happened in the iterations):
+
+- **Foundations prompt:** first drafted with a "Tailwind" collection in Figma; the user asked why a collection was needed when CSS variables can remap semantic names to Tailwind. The result: no Tailwind collection; Figma colours keep the resolved value and get **code syntax** pointing to the repo's CSS variables. For typography the user asked for the **nearest existing Tailwind utility** for every value (no new absolute numbers), so a mapping table of exceptions (line height 1.2 → `leading-tight`, 0.9 → `leading-none`, 11 px → `text-xs`, and so on) was added.
+- **Home prompt:** iterations covered (a) the Figma frames are the **Tailwind breakpoints and not a fluid layout**; (b) **image fillers as separate markdown files** with `type: home-image-filler`, a single standard markdown image (remote, localised by the existing mechanism), `accent` and `position`; (c) the front-matter field is **`type`**, with singular names, and **`team` counts as `about`**; (d) a section on **readable component structure** (recurring patterns as components, a single categories registry, colour through CSS custom properties, never building Tailwind classes from variables, mirroring Figma variant properties as props).
+- **HedgeDoc sync prompt:** extend the existing script to import filler notes from HedgeDoc share links.
+- **Team prompt:** the Team file's front matter has `members` and `advisory_board`; lists appear where the body contains `{{team}}` and `{{advisory-board}}`, which editors can move; sizes depend on role (Principal Investigator → large, Advisory Board Member → small, others → medium); marker handling must happen before mdsvex.
+- **Remaining templates prompt:** About, Events, Artifacts, Publications, with the mapping of real content to the layout discovered by reading the existing markdown files first.
+
+The final versions follow.
 
 ---
 
-Relying on the penpot file, create the home page design for the breakpoints where the board name begins with V. Create a page "Home" where you put those designs, but do not alter the boards in breakpoints.
+### Prompt 1 — Import the foundations (colours and typography) from the repository into Figma
 
--> Not found because Claude relied on memory of a previously version of the file where layers were not renamed with the letter V
+(Run in the website repository. Colours and typography only; no logo, no icons.)
 
----
-
-The navigation component as it is, is not working for mobile and small screen.
-
-It takes too much space at the top on both 375 and 640.
-
-On 1024 it could work, but I find it strange that the side notes are on the left instead that on the right.
-
-On 1280 I like it very much ho the page is organized in the grid, but I don't like very much the way in which the comopnent works. 
-
-Basically I like it only in the home page.
-
-Furthermore, the buttons for categories can be confused with the blocks that indicates the post category in each page, just above the title.
-
-Use three agents to design better solutions for the navigation. The first agent is conservative, and works to identify the most funtional solution. The second agent is visuals driven and attempts at valorizing the visual identity of the website. The third is generally creative and think about solutions that resemble the old operating systems of early 2000s. Every agent develops 3 solutions, that you place in a separate page called "Navigation proposals". Then agents run a design critique on each others results to establish which are the most meaningful aspects of each proposals. You collect this outcome to design a conclusive proposal in the same page.
-
-
----
-
-THen I was alone at the office and I started with vocal prompots
-
----
-
-So um, don't like very much uh, the final solution. I want to say that I like very much the number B two, uh, in which we have uh, a navigation bar at the bottom, um, uh, I'm wondering if it is possible to have something that uh, remains uh, in the form of a navigation bar at the bottom in every breakpoint, so even in larger screens, and uh, um, don't take up uh, any column in the uh, 1024 and uh, 1280 breakpoints um, in B2 I don't really like the um, upper bar with a bit philology written um, try to see if you can think about something that uh, resemble more uh, the logo um, although I have to say that I like uh, very much uh, um, the um, the dithered uh, uh, upper um, stroke that you can see in the scrolled header header hidden doc compact um, screen from um, A2 and also from uh, kind of C1 but mostly A2 I like that when you click on a category the pages corresponding to that category appears stacked on top of the lower bar menu bar um, can you also reproduce something similar to that in a newer version thank
-
-All right, not bad. I just don't like the uh, logo that you put on top of the page. I think it's um, somehow ugly positioned. And um, um, it doesn't really pay respect of the to the um, logo in itself, in the sense that it's not uh, valued. Um, can we just leave the border that you have put in the second screen with the header that is hidden? Can we just have that one on every page?
-
-All right, great. Um, I think I like it. So now I would like you to apply that solution to um, the variants, the breakpoints variants that you have in the home and in the page template pages. Um, in there, the first block currently is the navigation. So I want you to remove that and replace it with um, uh, image placeholder block. That uh, uh, it will use as a first block the logo as an image. And in this way, we will bring it back uh, into our homepage.
-
-I opened the prototype in Figma and I've noticed that the, the bar correctly sits at the bottom of the iPhone uh, 13 mini device. However, it scrolls up. Can you make it that it, uh, it is uh, fixed on the bottom of the page?
-
-I uploaded in the file the uh, images that I've used in PenPod to create the blocks for images in the home page. I would like you to add those images in the way you know in the same way in which they appear on PenPod and to add them to the different um, boards of the Figma file. Uh, it's up to you if you want to create components that then reappear exactly as they are in the board and if components are variants of um, the image uh, filler block or whatever, you can decide what is the most efficient and convenient solution from uh, the perspective of the Figma design file.
-
-Yeah, I forgot to tell you that I like uh, the final version of the navigation that you have produced. And I would like you to apply it to the whole project and to bring uh, components uh, into the components page and uh, Yeah, let's start with this and maybe later we will delete what you have done before as a attempt to identify the better design.
-
-All right, I'm looking at how you have uh, positioned it across the design and I like it. Although there are a little bit of imprecisions in the way you positioned the editor and stroke. Um, for example, uh, if you go in the uh, page template, uh, the editor and stroke that is green and is uh, upon the about uh, section, is kind of uh, um, mispositioned. Um, in that uh, it leaves a um, empty space on the right side of the button however i think i like it um for the um, page template at 1024 pixel um i like it uh, but uh, the uh, the notes uh, and the image caption are mispositioned and also i think we miss the background which i think you can uh, double check with uh, the the pen pot file now it's white maybe i made it uh, white for mistake so please restore it and also like if you look at the button um the footer has a, a four blocks um and it's kind of a problem here but yeah let's deal with this later and then let's look at the page template uh, uh, 1280 pixel width um there is something wrong here uh, in the sense that the layout uh, um, doesn't use the space in an optimal way. Uh, it should leave like a, an empty column on the left. And uh, the content as in PenPot should stay on the three columns on the right. What can we put in the first uh, um, column? Maybe uh, I don't know. Can you can you make a proposal? that uh, is not too leave that empty
-
-It seems that Figma has now the grid layout. Why don't you implement all the website uh, variations using the grid layout instead of the flex layout? Is there a reason why you haven't done it so far?
-
-Very good. Um, look that I have now changed a bit how the caption appears. On the page template, uh, 100 and 280 pixel width, in the sense that is aligned uh, towards the bottom of the image. So I'll try to apply the same thing to all the other layouts when possible. And also I changed where the not to and not three appears in the text. So please align the notes to the same row as you correctly described before.
-
-Replace images placeholders in the Template Page with a proper component that is added in the Components page. Look on penpot to see how it appears and notice that it uses a layered colour derived from the category of the page. I also put in the components page an image that you can use as an example.
-
----
-
-Write a prompt for a separate session of Claude Code in VS Code the um, foundations of the design language systems. Uh, do not include the logo and do not include the icons because I will deal with them um, separately. Just include the colors and the typography. Bear in mind that all colors are derived and must be linked to the Tailwind color palette. So it's just a different way to call the variables and I want the variables that we add to be linked to the original uh, Tailwind palette. For typography, similarly, um, I want you to use um, all the Tailwind tokens which means that uh, you need to try to match Uh, with uh, um, existing conventions and classes for line height, font size, um, font weight, uh, um, line height, and all the other things. Ideally, you should not write um, any new type of um, any sorry any absolute value for font size and all the other things, right? Um, the type of font, so the main font and then the font used for um, uh, sorry, the, the monospace font and the font used for the meta, that is the pixelated font, have to be um, overwritten on the tailwind specification in a in a custom uh, CSS file that is available in the repository. Uh, I think that everything is clear if Claude Code reads the Claude.md file.
-
-* I want that we select the most similar values already existing among the tailwind utilities
-
-# PROMPT
-
-`````
+`````markdown
 # Task: import the design-language-system foundations (colours + typography) from this repository into Figma
 
 Read `CLAUDE.md` first and follow it. It tells you where the Tailwind theme and the custom CSS file (font overrides) live. This task covers **only colours and typography**. **Do not** touch the logo or the icons; they are handled separately.
@@ -149,11 +161,9 @@ If two styles become identical (for example `pixel/note` and `pixel/caption`), k
 
 ---
 
-write a prompt for a separate Claude Code session that uses the Figma design file to learn how to develop um, the homepage of uh, the website that is developed in Svelte. Um, while developing the homepage, of course, you need to take into account that we have in separate files and um, if uh, Claude Code consults the Claude.md file it will know that we have token CSS file where we have colors, typography and other things and uh, we have to create components deriving them from the blocks that we can find in the um, components page on Figma. And also we have uh, the navigation bar that is at the bottom that needs to be um, created as a component that is used in every page and then reacts uh, to the URL or to the um, to the data of the page in itself to decide which is the uh, currently um, active category.
+### Prompt 2 — Build the Home page in SvelteKit
 
-# PROMPT
-
-``````
+`````markdown
 # Task: build the Home page of the website in SvelteKit from the Figma design
 
 Read `CLAUDE.md` first and follow it. It says where the **design-token CSS file** lives (colours, typography, spacing, font overrides on top of Tailwind) and what the project conventions are. Tailwind is installed and the project is scaffolded with SvelteKit. **Use the tokens. Do not hard-code colours, font sizes, line heights, radii or spacing.** If a value you need has no token, use the nearest Tailwind utility and mention it in your report.
@@ -247,10 +257,13 @@ Build `NavDock` as a **layout component used by every page** (put it in the root
 
 ## Report (max 350 words)
 What you built and where; the **component tree** (folders and components), which recurring patterns you extracted and why, and any pattern you chose not to extract; **where the registry and the theming live**; the front-matter schema you settled on and the rule for composing the Home tiles; any token that was missing or any value that does not match a Tailwind utility; placeholders for logo and icons; differences from the Figma frames and why; and anything you think should be decided by a human.
-``````
+`````
 
-# PROMPT
-``````
+---
+
+### Prompt 3 — Extend the `syncHedgeDocs` script to import image fillers
+
+`````markdown
 # Task: extend the `syncHedgeDocs` script so it can also import image fillers from HedgeDoc links
 
 Read `CLAUDE.md` first and follow it. Then **read the existing `syncHedgeDocs` script end to end** and its documentation before changing anything. You need to understand how it currently gets its list of HedgeDoc links, downloads each note, parses the front matter, localises remote images and writes the markdown into the repository.
@@ -299,13 +312,13 @@ Notes: the front matter may contain `#` comments, which the YAML parser must acc
 
 ## Report (max 250 words)
 What you changed and where; how the script takes its links and how to add fillers; the output folder and filename rule; the validation rules and their error messages; what you verified on existing notes; and any question for a human (for example what to do when a filler is removed from the link list).
-```````
-
-Now prompt for the team page
-
-# PROMPT
-
 `````
+
+---
+
+### Prompt 4 — Build the Team page in SvelteKit
+
+`````markdown
 # Task: build the Team page of the website in SvelteKit from the Figma design
 
 Read `CLAUDE.md` first and follow it. It says where the **design-token CSS file** lives (colours, typography, spacing, font overrides on top of Tailwind) and what the project conventions are. Tailwind is installed and the project is scaffolded with SvelteKit. **Use the tokens. Do not hard-code colours, font sizes, line heights, radii or spacing.** If a value you need has no token, use the nearest Tailwind utility and mention it in your report.
@@ -409,11 +422,13 @@ The code will be read and maintained by people. Before writing, **list the recur
 
 ## Report (max 300 words)
 What you built and where; the component tree, what you reused from the Home work and what you added; how the `{{…}}` markers are parsed and what happens with the renderer (mdsvex or other); the front-matter field names you found; how photos are localised; any token that was missing or value that did not match a Tailwind utility; differences from the Figma frames and why; and anything you think a human should decide.
-```````
+`````
 
-Prompt to create all the remaining pages:
+---
 
-```````
+### Prompt 5 — Build the remaining category templates (About, Events, Artifacts, Publications)
+
+`````markdown
 # Task: build the page templates for the remaining content types (About, Events, Artifacts, Publications) in SvelteKit from the Figma design
 
 Read `CLAUDE.md` first and follow it. It says where the **design-token CSS file** lives (colours, typography, spacing, font overrides on top of Tailwind) and what the project conventions are. Tailwind is installed and the project is scaffolded with SvelteKit. **Use the tokens. Do not hard-code colours, font sizes, line heights, radii or spacing, and never invent new numbers.** Use Tailwind utilities and the tokens only. If a value you need has no token or utility, use the nearest Tailwind one and list it in your report.
@@ -503,3 +518,27 @@ The code will be read and maintained by people. Before writing, **list the recur
 ## Report (max 400 words)
 What you built and where; the component tree and what you reused from Home and Team; the content-to-layout mapping for each type and any layout element with no source in the content; how notes are paired with paragraphs and how captions are read; the front-matter fields you found; any change to the schema; any token that was missing or value that did not match a Tailwind utility; differences from the Figma frames and why; and anything a human should decide.
 `````
+
+---
+
+## 8. Other helper texts written in the session
+
+- **Image fillers as markdown:** for each of the three line-art images the user supplied (hard disk, hanging file folder, magnetic field), I wrote alt text (accessibility description) and a caption (editorial text) in the format `![alt](url "caption")`.
+- **AI image prompts:** the exact prompts the user used to generate the new images (floppy disk, floppy disk drive, hard disk, hanging file folder, with negative prompts) are saved in the **Pictures** board on the Components page of the Figma file, with the vocabulary, tips and an image-to-prompt table.
+
+## 9. State at the end of the session and open items
+
+Done in Figma: foundations, components, Home, Page Template, the five category templates (About, Team, Events, Artifacts, Publications) at four breakpoints, the Dock navigation, the image fillers with the new AI-generated images, and the Pictures board with documentation.
+
+Open points to decide or clean up later:
+- Delete the **Navigation proposals** page (the nine proposals, the first "Navigation Index" attempt and the old demo frames) and the **old Navigation** component.
+- Delete the **OLD** image variants, the old image sources and the `Image Filler (OLD)` set on the Pictures board when no longer needed.
+- Rename the new Image Filler variants so names match their images (`Folder` shows a floppy drive, `Image10` shows a folder).
+- The **Computer** image has no recorded prompt in the documentation.
+- The unused `Folder` variant (floppy drive) is not used on Home (four slots, five new images).
+- The dock does not yet model the iOS home-indicator safe area.
+- The Page Template footer wraps 3 + 1 at 1024 (the user said to handle it later).
+- The pill order in the Page Template meta row differs from Penpot (the user's own edit).
+- Several Bootstrap icons render imperfectly (the user will handle icons separately).
+- The real Penpot pages for Home and the category templates are old versions; the Figma file is the source of truth.
+- For the code: the Claude Code sessions are expected to report differences from Figma, missing tokens and anything needing a human decision (listed in the "Report" section of each prompt).

@@ -78,9 +78,13 @@ Self-hosted with Fontsource, imported in `src/routes/+layout.svelte` and registe
 
 - Mona Sans (`font-sans`, the default): `@fontsource-variable/mona-sans`, files `wght.css` and `wght-italic.css` (weight axis only). If the width axis is ever needed, switch to `standard.css` and `standard-italic.css`.
 - JetBrains Mono (`font-mono`, for code): `@fontsource-variable/jetbrains-mono`, file `wght.css` (weight axis only).
-- Bitcount Prop Single (`font-pixel`): `@fontsource-variable/bitcount-prop-single`, file `full.css` (all axes, custom ones included).
+- Bitcount Prop Single (`font-pixel`): `@fontsource-variable/bitcount-prop-single`, file `full.css` (all axes, custom ones included). Its custom axes (`CRSV`, `ELSH`, `ELXP`) are pinned per Figma text style in `tokens.css`: `font-pixel` is `pixel/metadata`, `font-pixel-caption` is `pixel/caption`, `font-pixel-note` is `pixel/note`.
 
 Never load fonts from Google Fonts or any other external service.
+
+### Text styles
+
+The Figma text styles are the `TEXT` map in `src/lib/styles/text.ts`. Use Tailwind's own utilities for sizes, line heights, weights and tracking, never arbitrary values: where Figma has a value between two utilities, take the nearest one and note the Figma value in a comment. The axes of variable fonts are the only exception: they are set to the exact Figma values, in `tokens.css`. The mapping is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#text-styles).
 
 ### Icons
 
@@ -134,9 +138,15 @@ The notes live on a HedgeDoc 1.x server, https://pad.dsl.unibe.ch, which may onl
 - edit: `https://pad.dsl.unibe.ch/<id>` (raw Markdown on `/<id>/download`). `https://pad.dsl.unibe.ch/<id>` is the canonical source of a page.
 - published: `https://pad.dsl.unibe.ch/s/<shortid>` (raw Markdown on `/s/<shortid>/download`); `/s/<shortid>/edit` redirects to `/<id>`.
 
-Each note has a YAML front matter with `type`, `title`, `date` (`YYYY-MM-DD`), `venue`, `keywords`, `pinned`, `tags`, and optionally `subtitle`, `publication-type` and `slug`. The page title is the `title` field, not a `#` heading in the body.
+Each note has a YAML front matter with `type`, `title`, `date` (`YYYY-MM-DD`), `venue`, `keywords`, `tags`, and optionally `subtitle`, `publication-type`, `slug`, `position` and `hidden-from-home`. The page title is the `title` field, not a `#` heading in the body.
 
 **To choose the URL of a page, add `slug:` to the note's metadata on HedgeDoc.** Otherwise the slug comes from the title.
+
+**To place a page in the Home grid, add `position:`.** `1` is the first tile, `2` the second…; `-1` is the last tile, and several pages with `-1` all go to the bottom. Without a position (or with an empty one) a page follows its date, newest first. The full rule is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#the-home-tile-rule). The old `pinned` field is no longer read.
+
+**To keep a page out of the Home grid, add `hidden-from-home: true`.** Without the field every page has a card on Home. A hidden page keeps its URL and its place in the dock's list of its category.
+
+The credits page is an About note with `slug: credits` and `hidden-from-home: true`, imported to `src/content/about/credits/index.md` (URL `/about/credits`). The "Credits" link of the footer's colophon appears only when that page exists.
 
 ### Importing: `scripts/syncFromHedgeDoc.js`
 

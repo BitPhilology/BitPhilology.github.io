@@ -23,7 +23,7 @@ keywords:
 
 pinned: false
 source: https://pad.dsl.unibe.ch/ghrdFbhVQy-herciaypa8Q
-importedAt: 2026-09-30T18:43:58Z
+importedAt: 2026-10-01T18:49:01Z
 
 # ⭐️ USEFUL TO KNOW ⭐️
 
@@ -37,6 +37,9 @@ importedAt: 2026-09-30T18:43:58Z
 # - in the text write [^note-unique-label] to insert the reference to the note
 # - in any place of the document write the text of the note as an independent paragraph like this -> [^note-unique-label]: Text of the note...
 ---
+
+![](./assets/9a55f87e-fbaf-4dd8-9166-cc740653b74f.jpeg)
+
 
 A full-day workshop organized by the Bit Philology project team and funded by the Swiss National Science Foundation (SNSF), taking place Friday 8 May 2026 at the University of Bern.
 

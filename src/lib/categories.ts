@@ -34,20 +34,25 @@ interface Entry {
 	sheet: boolean;
 }
 
-/** The line under the title of a stacked card: `subtitle` is the card/subtitle style, `body` body/body. */
+/**
+ * The line under the title of a stacked card: `subtitle` is the card/subtitle style, `authors`
+ * card/authors and `body` body/body.
+ */
 export interface CardDescription {
 	text: string;
-	style: 'subtitle' | 'body';
+	style: 'subtitle' | 'authors' | 'body';
 }
 
 interface PostEntry extends Entry {
 	card: {
 		/** stacked: title over a description · two-column: title beside authors and venue. */
 		body: 'stacked' | 'two-column';
+		/** Where a stacked body sits in the space under the meta row. */
+		align: 'top' | 'center';
 		/** Long text fades out at the bottom of the card. */
 		fade: boolean;
 		description: (post: Post) => CardDescription | undefined;
-		/** The pills of the meta row, next to the arrow. */
+		/** The pills of the meta row, on the right of the type's icon. */
 		pills: (post: Post) => string[];
 	};
 	page: {
@@ -73,7 +78,7 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 		category: 'about',
 		dockLabel: 'About',
 		sheet: true,
-		card: { body: 'stacked', fade: true, description: excerpt, pills: () => [] },
+		card: { body: 'stacked', align: 'top', fade: true, description: excerpt, pills: hashtags },
 		page: PAGE
 	},
 	// Team counts as About for the dock, the page sheet and the colours.
@@ -84,7 +89,7 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 		category: 'about',
 		dockLabel: null,
 		sheet: true,
-		card: { body: 'stacked', fade: true, description: excerpt, pills: () => [] },
+		card: { body: 'stacked', align: 'top', fade: true, description: excerpt, pills: hashtags },
 		page: PAGE
 	},
 	event: {
@@ -96,6 +101,7 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 		sheet: true,
 		card: {
 			body: 'stacked',
+			align: 'center',
 			fade: false,
 			description: (post) => (post.subtitle ? { text: post.subtitle, style: 'subtitle' } : undefined),
 			pills: (post) => present([post.date && shortDate(post.date), post.location ?? post.venue])
@@ -114,6 +120,7 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 		sheet: true,
 		card: {
 			body: 'two-column',
+			align: 'top',
 			fade: false,
 			description: () => undefined,
 			pills: (post) => present([post.date && yearOf(post.date), post.publicationType])
@@ -133,8 +140,9 @@ export const POST_TYPES: Record<PostType, PostEntry> = {
 		sheet: true,
 		card: {
 			body: 'stacked',
+			align: 'center',
 			fade: false,
-			description: (post) => (post.authors ? { text: post.authors, style: 'body' } : excerpt(post)),
+			description: (post) => (post.authors ? { text: post.authors, style: 'authors' } : excerpt(post)),
 			pills: (post) => present([post.kind, ...hashtags(post)])
 		},
 		// When it went online, its kind and the keywords (Figma "Artifacts").

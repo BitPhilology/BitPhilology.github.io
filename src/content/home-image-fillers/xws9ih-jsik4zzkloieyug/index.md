@@ -19,5 +19,5 @@ importedAt: 2026-09-30T22:09:35Z
 # Here the alt text (first string) is for accessibility/screen readers, while the title (in quotes) becomes the visible caption text. This is the cleanest pattern because it separates the two responsibilities: alt = description for those who cannot see the image, title = editorial caption, which can be longer or more formal.
 ---
 
-![Logo di Bit Philology: il nome del progetto in carattere pixelato a spaziatura fissa, compreso tra due matrici di asterischi che passano dal grigio chiaro ai bordi al nero pieno al centro, come in una retinatura. Le matrici di asterischi formano la sagoma di un floppy disk](./assets/78e93bae-aa6f-4e45-9960-8553aac7f48a.jpg "Il logo di Bit Philology.")
+![Logo di Bit Philology: il nome del progetto in carattere pixelato a spaziatura fissa, compreso tra due matrici di asterischi che passano dal grigio chiaro ai bordi al nero pieno al centro, come in una retinatura. Le matrici di asterischi formano la sagoma di un floppy disk](./assets/logo.png "Il logo di Bit Philology.")
 

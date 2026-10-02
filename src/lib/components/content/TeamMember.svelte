@@ -1,7 +1,7 @@
 <!--
 	Team member (Figma "Team Member"): a member's photo, name, role and affiliation on the subtle
-	surface, in the member lists of the Team page. `size` mirrors the Figma "Size" property and only
-	changes the photo: 120, 96 or 60 px. The photo takes the category colour, as in Figma: the image's
+	surface, in the member list of the Team page. `size` follows the Figma "Size" property and only
+	changes the photo: 120 or 96 px. The photo takes the category colour, as in Figma: the image's
 	luminosity over a --cat-darker disc. The name links to the member's page when there is one.
 -->
 <script lang="ts">
@@ -15,8 +15,7 @@
 
 	const PHOTO: Record<MemberSize, { class: string; pixels: number }> = {
 		large: { class: 'size-30', pixels: 120 },
-		medium: { class: 'size-24', pixels: 96 },
-		small: { class: 'size-15', pixels: 60 }
+		medium: { class: 'size-24', pixels: 96 }
 	};
 	const photo = $derived(PHOTO[size]);
 </script>

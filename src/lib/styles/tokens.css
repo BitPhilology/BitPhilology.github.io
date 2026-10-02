@@ -6,9 +6,14 @@
 	--font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 	--font-pixel: "Bitcount Prop Single Variable", ui-monospace, monospace;
 
-	/* Pin Bitcount's custom axes on every `font-pixel` element.
+	/* Bitcount's custom axes, pinned per Figma text style: `font-pixel` is pixel/metadata,
+	   `font-pixel-caption` pixel/caption and `font-pixel-note` pixel/note.
 	   Ranges: CRSV 0–1, ELSH 0–100, ELXP 0–100 (slnt and wght go through font-style and font-weight). */
-	/* --font-pixel--font-variation-settings: "CRSV" 0.5, "ELSH" 0, "ELXP" 0; */
+	--font-pixel--font-variation-settings: "CRSV" 0, "ELSH" 0, "ELXP" 0;
+	--font-pixel-caption: var(--font-pixel);
+	--font-pixel-caption--font-variation-settings: "CRSV" 1, "ELSH" 50, "ELXP" 0;
+	--font-pixel-note: var(--font-pixel);
+	--font-pixel-note--font-variation-settings: "CRSV" 0, "ELSH" 50, "ELXP" 0;
 }
 
 /* Semantic colours: aliases of Tailwind's palette, mirrored by the "Colors" collection in Figma. */

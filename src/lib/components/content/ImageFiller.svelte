@@ -1,8 +1,8 @@
 <!--
-	Image filler (Figma "Image Filler"; floppy, disk, folder, magnetic, and the logo tile): an image
-	from src/content/home-image-fillers as a Home tile, a duotone in its accent colour, with no
-	background of its own. The tile is a size container: it is square, so 100cqw caps the image at
-	the tile's inner size in both directions, whatever its proportions.
+	Image filler (Figma "Image Filler"; the illustrations and the logo tile): an image from
+	src/content/home-image-fillers as a Home tile. An image panel in the accent colour that covers
+	the whole tile: a white frame with 64 px padding, in which the image takes the space left and
+	keeps its proportions.
 -->
 <script lang="ts">
 	import ImagePanel from '$lib/components/ui/ImagePanel.svelte';
@@ -14,7 +14,10 @@
 </script>
 
 <CategoryTheme category={accent}>
-	<Tile element="figure" class="@container flex items-center justify-center">
-		<ImagePanel {src} {alt} class="max-h-[100cqw] max-w-[100cqw]" />
+	<Tile element="figure">
+		<!-- Over the tile's own padding, and with a definite size for the panel to fill. -->
+		<div class="absolute inset-0">
+			<ImagePanel {src} {alt} class="size-full p-16" imageClass="size-full" />
+		</div>
 	</Tile>
 </CategoryTheme>

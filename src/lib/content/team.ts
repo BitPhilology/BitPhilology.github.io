@@ -1,15 +1,14 @@
-// The member lists of the Team page: the front matter parser and the Team Member size rule.
+// The member list of the Team page: the front matter parser and the Team Member size rule.
 import { isRecord, text } from './fields';
 import type { Member } from './types';
 
 /** The Figma "Size" property of Team Member. */
-export type MemberSize = 'large' | 'medium' | 'small';
+export type MemberSize = 'large' | 'medium';
 
-// The size of a member follows the role, whatever list the member is in. Roles are matched
-// without regard to case; every other role is medium.
+// The size of a member follows the role. Roles are matched without regard to case; every other
+// role is medium.
 const SIZE_BY_ROLE: Record<string, MemberSize> = {
-	'principal investigator': 'large',
-	'advisory board member': 'small'
+	'principal investigator': 'large'
 };
 
 export function memberSize(role: string): MemberSize {

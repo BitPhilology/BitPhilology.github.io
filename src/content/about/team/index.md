@@ -37,50 +37,6 @@ members:
   photo: https://picsum.photos/200
   externalURL: https://example.com/tommaso-elli
 
-# list of advisory board members
-advisory_board:
-- name: Emmanuela Carbé
-  role: Advisory Board Member
-  affiliation: Università Ca' Foscari Venezia
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/emmanuela-carbe
-
-- name: Paola Maria Carmela Italia
-  role: Advisory Board Member
-  affiliation: University of Sussex
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/paola-italia
-
-- name: Matthew G. Kirschenbaum
-  role: Advisory Board Member
-  affiliation: University of Maryland
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/matthew-kirschenbaum
-
-- name: Elena Pierazzo
-  role: Advisory Board Member
-  affiliation: Université de Tours
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/elena-pierazzo
-
-- name: Thorsten Ries
-  role: Advisory Board Member
-  affiliation: The University of Texas at Austin
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/thorsten-ries
-
-- name: Francesca Tomasi
-  role: Advisory Board Member
-  affiliation: Università di Bologna
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/francesca-tomasi
-
-- name: Joris van Zundert
-  role: Advisory Board Member
-  affiliation: Huygens Institute (KNAW)
-  photo: https://picsum.photos/200
-  externalURL: https://example.com/joris-van-zundert
-
 pinned: false
 source: https://pad.dsl.unibe.ch/eXfd9t1LQui9OWZKRwYY0A
 importedAt: 2026-09-30T22:31:56Z
@@ -100,14 +56,6 @@ importedAt: 2026-09-30T22:31:56Z
 
 The team working on the research project is composed by experts in Phylology, Digital Archives, Digital Born Materials, Information Visualization, and Digital Design.
 
-Suspendisse in magna id leo semper rutrum. Aliquam erat volutpat. Vivamus vel arcu nulla. Aenean non mi metus. Integer vulputate gravida sapien, id imperdiet nunc lacinia vel. Nam nulla nisi, porttitor eu laoreet et, commodo a mi. Donec nisi nisl, dignissim at malesuada nec, feugiat convallis nunc. Fusce tempus risus at dignissim vulputate.
+The project is based at the Digital Humanities Center of the University of Bern, part of the Walter Benjamin Kolleg, and is funded by the Swiss National Science Foundation for the years 2025 to 2030. It is led by Elena Spadini, SNSF Assistant Professor, whose research covers digital philology and the technologies of text. Doctoral students and a research associate work with her on the description, edition and analysis of born-digital literary archives.
 
 {{team}}
-
-### Advisory Board
-
-Vivamus imperdiet id eros sed gravida. Praesent vehicula enim eu facilisis hendrerit. Nunc quam metus, molestie vel convallis sit amet, blandit vitae nibh. Donec gravida ipsum ac dignissim fringilla. In efficitur dui mattis, vulputate nibh id, tempus sem. Donec imperdiet efficitur eros a pharetra. Sed id sem pretium, pretium mi in, bibendum massa.
-
-Fusce ac posuere erat. Nullam egestas dolor sollicitudin, posuere nulla eu, porttitor ipsum. Cras ac tincidunt velit, at luctus nibh. Ut aliquet vel magna sit amet imperdiet. Aliquam sagittis felis eu nibh accumsan maximus. Praesent imperdiet nibh pretium dictum hendrerit. Quisque eu sodales magna, sit amet efficitur lorem. Proin vulputate erat ullamcorper posuere molestie.
-
-{{advisory-board}}

@@ -18,6 +18,6 @@ export const GRID = {
 	header: 'lg:col-span-2',
 	row: 'flex flex-col gap-4 lg:col-span-3 lg:grid lg:grid-cols-subgrid',
 	content: 'min-w-0 lg:col-span-2',
-	// The notes column keeps a 64 px margin on its right, as in the Figma frames.
-	aside: 'lg:col-start-3 lg:pr-16'
+	// The side column: notes use its full width, captions keep 64 px on their right (ImageFigure).
+	aside: 'lg:col-start-3'
 } as const;

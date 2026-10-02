@@ -9,6 +9,8 @@ declare global {
 		interface PageData {
 			/** Set by post pages: the `type` of the post, which decides the active category. */
 			postType?: PostType;
+			/** Set by the root layout: the URL of the credits page, when there is one. */
+			credits?: string;
 		}
 		// interface PageState {}
 		// interface Platform {}

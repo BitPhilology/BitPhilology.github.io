@@ -21,7 +21,8 @@ export function toPost(path: string, data: FrontMatter, body: string): Post {
 	const type = isPostType(data.type) ? data.type : 'about';
 	const keywords = Array.isArray(data.keywords) ? data.keywords.map(String) : [];
 	const title = plain(data.title);
-	if (!title) throw new Error(`src/content/${path}/index.md: the front matter has no "title"; every page needs one.`);
+	const file = `src/content/${path}/index.md`;
+	if (!title) throw new Error(`${file}: the front matter has no "title"; every page needs one.`);
 	return {
 		type,
 		path,
@@ -30,7 +31,8 @@ export function toPost(path: string, data: FrontMatter, body: string): Post {
 		subtitle: plain(data.subtitle),
 		date: text(data.date),
 		excerpt: text(data.excerpt) ?? firstParagraph(body),
-		pinned: data.pinned === true,
+		position: toPosition(data.position, file),
+		hiddenFromHome: data['hidden-from-home'] === true,
 		authors: text(data.authors),
 		venue: text(data.venue),
 		location: text(data.location),
@@ -47,9 +49,17 @@ export function byDate(a: Post, b: Post): number {
 	return (b.date ?? '').localeCompare(a.date ?? '') || a.title.localeCompare(b.title);
 }
 
-/** Pinned posts first, then the others; each group newest first. */
-export function pinnedThenByDate(a: Post, b: Post): number {
-	return Number(b.pinned) - Number(a.pinned) || byDate(a, b);
+/**
+ * The `position` of a post in the Home grid: a whole number, counted from the start (1 is the first
+ * tile) or, when negative, from the end (-1 is the last). An empty or missing field is no position.
+ * Anything else fails the build.
+ */
+function toPosition(value: unknown, file: string): number | undefined {
+	if (value == null || value === '') return undefined;
+	if (typeof value === 'number' && Number.isInteger(value) && value !== 0) return value;
+	throw new Error(
+		`${file}: "position" must be a whole number other than 0, such as 2 or -1, or be left empty (found ${JSON.stringify(value)}).`
+	);
 }
 
 /** Long publication titles use the smaller heading style on cards, as in the Figma Home frames. */

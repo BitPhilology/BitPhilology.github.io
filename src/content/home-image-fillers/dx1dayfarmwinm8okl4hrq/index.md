@@ -19,6 +19,6 @@ importedAt: 2026-09-30T22:14:07Z
 # Here the alt text (first string) is for accessibility/screen readers, while the title (in quotes) becomes the visible caption text. This is the cleanest pattern because it separates the two responsibilities: alt = description for those who cannot see the image, title = editorial caption, which can be longer or more formal.
 ---
 
-![Exploded diagram of a 3.5-inch floppy disk, with its parts stacked vertically and labelled: top shell, woven liner, magnetic disk with central hub, a second woven liner, and bottom shell. The metal shutter and its spring sit to the lower left, and the write-protect tab is marked at the right edge. A note says that a lifter presses the liners against the disk to trap dust.](./assets/f6641aef-4d9d-43a0-9dd6-843548a4f6fb.gif "Exploded view of a 3.5-inch floppy disk, showing its components: shells, woven liners, magnetic disk, shutter and write-protect tab.")
+![Exploded diagram of a 3.5-inch floppy disk, with its parts stacked vertically and labelled: top shell, woven liner, magnetic disk with central hub, a second woven liner, and bottom shell. The metal shutter and its spring sit to the lower left, and the write-protect tab is marked at the right edge. A note says that a lifter presses the liners against the disk to trap dust.](./assets/floppy-components.png "Exploded view of a 3.5-inch floppy disk, showing its components: shells, woven liners, magnetic disk, shutter and write-protect tab.")
 
 
