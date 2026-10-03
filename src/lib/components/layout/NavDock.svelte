@@ -1,9 +1,9 @@
 <!--
-	Navigation dock (Figma "Navigation Dock"): the bottom navigation of every page, fixed to the
-	viewport. It renders one NavDockItem per dock entry of the registry. Styles, by breakpoint only:
-	phone (icon over label) below lg, compact (icons only, lower) while scrolling down below lg, and
-	wide (icon beside label) from lg. It owns the open page sheet: one at a time, closed by Escape,
-	a click outside or a navigation.
+	Navigation dock (Figma "Navigation Dock"): the navigation of every page, fixed to the viewport,
+	at the bottom below lg and at the top from lg. It renders one NavDockItem per dock entry of the
+	registry. Styles, by breakpoint only: phone (icon over label) below lg, compact (icons only,
+	lower) while scrolling down below lg, and wide (icon beside label) from lg. It owns the open page
+	sheet: one at a time, closed by its own dock item, Escape, a click outside or a navigation.
 -->
 <script lang="ts">
 	import type { Attachment } from 'svelte/attachments';
@@ -67,7 +67,7 @@
 	{@attach closeOnClickOutside}
 	aria-label="Main"
 	data-compact={compact || undefined}
-	class="group/dock fixed inset-x-0 bottom-0 z-40 border-t-2 border-surface-dark-background bg-surface-white"
+	class="group/dock fixed inset-x-0 z-40 border-t-2 max-lg:bottom-0 lg:top-0 border-surface-dark-background bg-surface-white"
 >
 	<ul class="flex">
 		{#each DOCK as entry (entry.category)}
@@ -77,7 +77,6 @@
 				open={open === entry.category}
 				posts={sheets[entry.category] ?? []}
 				ontoggle={(button) => toggle(entry.category, button)}
-				onclose={() => close()}
 			/>
 		{/each}
 	</ul>

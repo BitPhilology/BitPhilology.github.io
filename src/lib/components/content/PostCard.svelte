@@ -2,7 +2,8 @@
 	Post card (Figma "Post"): the tile of a post on Home, and later on the category pages. A shared
 	shell (the meta row at the top, and the fade of long text) around a body that the registry picks:
 	stacked (title over a description) or two-column (publications). The title links to the post,
-	and its link covers the whole card (CardLink).
+	and its link covers the whole card (CardLink). Under the pointer or the keyboard focus the card
+	comes forward: it grows by 5% around its centre, above its neighbours, without moving them.
 -->
 <script lang="ts">
 	import { POST_TYPES, categoryOf } from '$lib/categories';
@@ -18,10 +19,14 @@
 	const BODIES = { stacked: PostBody, 'two-column': PublicationBody };
 	const entry = $derived(POST_TYPES[post.type]);
 	const Body = $derived(BODIES[entry.card.body]);
+	// Only for those who have not asked for reduced motion; Tailwind's hover variant only applies on
+	// devices that can hover.
+	const ZOOM =
+		'motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out motion-safe:hover:z-10 motion-safe:hover:scale-105 motion-safe:has-focus-visible:z-10 motion-safe:has-focus-visible:scale-105';
 </script>
 
 <CategoryTheme category={categoryOf(post.type)}>
-	<Tile element="article" surface="card" class="flex flex-col gap-3">
+	<Tile element="article" surface="card" class={['flex flex-col gap-3', ZOOM]}>
 		<PostMeta icon={entry.icon} label={entry.label} pills={entry.card.pills(post)} />
 		<Body {post} />
 		{#if entry.card.fade}

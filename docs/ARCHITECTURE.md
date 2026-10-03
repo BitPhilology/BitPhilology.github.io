@@ -97,6 +97,8 @@ The logo is content, not code: it is the image filler at position 1. The build f
 
 The card has no arrow button: its title is the link to the post (`CardLink`), stretched over the whole tile, so the card is one click target and one keyboard stop, with the focus ring drawn inside the tile.
 
+Under the pointer or the keyboard focus a post card comes forward: it grows by 5% around its centre (`ZOOM` in `PostCard`), above its neighbours and without moving them, since only its transform changes. The 16 px gaps and page padding leave room for it. The effect is for post cards only, not for image fillers or footer tiles, and only without `prefers-reduced-motion`.
+
 `ImagePanel` is the duotone of the Figma "Image Filler Base Instance" and "Image Base Instance": a white frame, the image in greyscale, and an overlay in `--cat-darker`, as large as the frame, screen-blended over both. Dark parts take the category colour; light parts and the frame stay white. The image keeps its proportions and is never cropped.
 
 - `ImageFiller` (Home): the panel covers the tile, with 64 px padding, and the image takes the space left.
@@ -125,7 +127,7 @@ What the files of `src/content` hold, and how the renderer reads it. The notes o
 | `lg` | 3 | cols 1–3 | – | cols 1–2 | col 3 |
 | `xl` | 4 | cols 1–4 | col 1 | cols 2–3 | col 4 |
 
-From `lg` the article is a subgrid of the page grid (`grid-cols-subgrid`), and every block of the body is one row, itself a subgrid of the article: the block's content takes the content columns and its notes (or its caption) the notes column, **on the same row**. A note therefore starts at the top of the paragraph that calls it, and a caption at the top of its image. A caption keeps 64 px on its right, to set it apart from the notes, which use the full width of the column (Figma "Sidenotes & Captions"). Nothing is positioned absolutely. A long note makes its row taller, so the next paragraph moves down. Below `lg` the same row is a column: the notes or the caption follow the content.
+From `lg` the article is a subgrid of the page grid (`grid-cols-subgrid`), and every block of the body is one row, itself a subgrid of the article: the block's content takes the content columns and its notes (or its caption) the notes column, **on the same row**. A note therefore starts at the top of the paragraph that calls it; a caption sits at the bottom of the row, 16 px above the bottom of its image. A caption keeps 64 px on its right, to set it apart from the notes, which use the full width of the column (Figma "Sidenotes & Captions"). Nothing is positioned absolutely. A long note makes its row taller, so the next paragraph moves down. Below `lg` the same row is a column: the notes or the caption follow the content.
 
 The page index sits in column 1 at `xl` and sticks to the top while the article scrolls; it is hidden below `xl`, where the dock's page sheet lists the posts.
 
@@ -251,15 +253,16 @@ The root layout themes the whole page with the active category (`activeCategory(
 - `Container` is the page width: 16 px padding, full width below `sm`, then capped at the width of the last breakpoint reached (`sm` 640, `lg` 1024, `xl` 1280). Between two breakpoints the layout of the smaller one stays, as in the four Figma frames. Tailwind's `container` class is not used: it also stops at `md` and `2xl`.
 - `TileGrid` is the square-tile grid: 1, 2, 3 and 4 columns at base, `sm`, `lg` and `xl`, with a 16 px gap. `Tile` gives each cell its square shape, surface and padding.
 - The grid of post pages is `GRID` in `src/lib/styles/grid.ts` (see [The grid](#the-grid)).
-- The dock is fixed to the bottom; the root layout adds `pb-16` so the end of the page stays clear of it.
+- The dock is fixed to the bottom of the viewport below `lg` and to the top from `lg` (64 px high). The root layout keeps the page clear of it: `pb-16` below `lg`, `pt-16` from `lg`, on top of each page's own top padding. From `lg` the `html` element also has `scroll-pt-20`, so a link to a heading or a note does not land under the dock.
 
 ## Navigation dock
 
 `NavDock` renders one `NavDockItem` per dock entry and owns the open page sheet.
 
 - Styles by breakpoint only: phone (icon over label) below `lg`, wide (icon beside label) from `lg`. Below `lg` it turns compact (icons only, 48 px) while the page scrolls down, and back on scroll up; the transition is `motion-safe` only.
-- The active item has the category tint and a dithered cap over the whole cell, and carries `aria-current="page"`. The top stroke (`TopStroke`) is the same dither at the top of the page, neutral on Home.
-- Home is a link. The other items are buttons (`aria-expanded`, `aria-controls`) that open a `PageSheet`: the list of all posts of the category (`getSheets`), full width above the dock on phones, a popover above the item from `lg`. The sheet is a non-modal dialog that takes the focus on open; Escape, the close button, a click outside or a navigation close it, and the focus goes back to the item.
+- The icons and labels are in the category's darker colour. The active item has the category tint and a dithered cap over the whole cell, also in the darker colour, and carries `aria-current="page"`. Another item gets the tint alone, without the dither, under the pointer (on devices that can hover) or the keyboard focus. The top stroke (`TopStroke`) is the same dither at the top of the page, in the category's main colour (neutral on Home); it exists only below `lg`, since from `lg` the dock itself is at the top.
+- Home is a link. The other items are buttons (`aria-expanded`, `aria-controls`) that open a `PageSheet`: the list of all posts of the category (`getSheets`), full width above the dock on phones, a popover below the item from `lg`. It has no header and no close button: it starts with the rows. The sheet is a non-modal dialog that takes the focus on open; its dock item, Escape, a click outside or a navigation close it, and Escape gives the focus back to the item.
+- The dock comes before the page in the markup (root layout), so the keyboard and screen readers reach the navigation first, at every breakpoint.
 
 ## Text styles
 

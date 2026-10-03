@@ -43,7 +43,8 @@
 /* Dithered strip (top stroke, dock cap). Figma draws it as a 400 px wide image clipped by its
    frame, which would stop short on a wider cell. Here it is a 16 × 8 tile of 2 px pixels (a full
    row, then every 2nd, 4th and 8th pixel) repeated along x and clipped by the box, so it covers
-   any width without scaling the pixels. The tile is a mask: the colour is --cat-main. */
+   any width without scaling the pixels. The tile is a mask: the colour is --cat-main, unless a
+   background utility sets another (the dock cap is --cat-darker). */
 .dither {
 	background-color: var(--cat-main);
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8'%3E%3Cpath d='M0 0h16v2H0zM2 2h2v2H2zM6 2h2v2H6zM10 2h2v2h-2zM14 2h2v2h-2zM4 4h2v2H4zM12 4h2v2h-2zM8 6h2v2H8z'/%3E%3C/svg%3E");

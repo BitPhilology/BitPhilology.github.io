@@ -1,5 +1,5 @@
 <!--
-	Icon plus label: the cell of the category signifier, the page sheet header and the dock items.
+	Icon plus label: the cell of the category signifier and the dock items.
 	The icon is decorative; the label names the cell. `class` lays out the cell (direction, gap, type).
 -->
 <script lang="ts">

@@ -25,9 +25,10 @@
 <!-- The page theme: the active category colours the top stroke, the dock and the focus rings. -->
 <CategoryTheme {category}>
 	<TopStroke />
-	<!-- The bottom padding keeps the end of the page clear of the fixed dock. -->
-	<div class="pb-16">
+	<!-- Before the page in the markup, so the keyboard and screen readers reach the navigation first. -->
+	<NavDock sheets={data.sheets} active={category} />
+	<!-- The padding keeps the page clear of the fixed dock: its end below lg, its start from lg. -->
+	<div class="max-lg:pb-16 lg:pt-16">
 		{@render children()}
 	</div>
-	<NavDock sheets={data.sheets} active={category} />
 </CategoryTheme>

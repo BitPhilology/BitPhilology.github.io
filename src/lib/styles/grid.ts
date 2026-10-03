@@ -12,8 +12,8 @@
 export const GRID = {
 	page: 'grid grid-cols-1 gap-4 lg:grid-cols-3 xl:grid-cols-4',
 	meta: 'lg:col-span-3 xl:col-span-4',
-	// The page index exists only at xl; it stays in view while the article scrolls.
-	index: 'max-xl:hidden xl:sticky xl:top-8 xl:col-start-1 xl:row-start-2 xl:self-start',
+	// The page index exists only at xl; it stays in view, below the dock, while the article scrolls.
+	index: 'max-xl:hidden xl:sticky xl:top-24 xl:col-start-1 xl:row-start-2 xl:self-start',
 	article: 'grid grid-cols-1 gap-4 lg:col-span-3 lg:grid-cols-subgrid xl:col-start-2 xl:row-start-2',
 	header: 'lg:col-span-2',
 	row: 'flex flex-col gap-4 lg:col-span-3 lg:grid lg:grid-cols-subgrid',
